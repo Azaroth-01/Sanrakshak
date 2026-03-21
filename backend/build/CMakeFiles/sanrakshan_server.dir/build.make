@@ -83,17 +83,65 @@ CMakeFiles/sanrakshan_server.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/sanrakshan_server.dir/src/main.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/aaryamaan/Desktop/Sanrakshan/backend/src/main.cpp -o CMakeFiles/sanrakshan_server.dir/src/main.cpp.s
 
+CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o: CMakeFiles/sanrakshan_server.dir/flags.make
+CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o: /home/aaryamaan/Desktop/Sanrakshan/backend/src/NetworkGraph.cpp
+CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o: CMakeFiles/sanrakshan_server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o -MF CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o.d -o CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o -c /home/aaryamaan/Desktop/Sanrakshan/backend/src/NetworkGraph.cpp
+
+CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/aaryamaan/Desktop/Sanrakshan/backend/src/NetworkGraph.cpp > CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.i
+
+CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/aaryamaan/Desktop/Sanrakshan/backend/src/NetworkGraph.cpp -o CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.s
+
+CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o: CMakeFiles/sanrakshan_server.dir/flags.make
+CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o: /home/aaryamaan/Desktop/Sanrakshan/backend/src/SimulationEngine.cpp
+CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o: CMakeFiles/sanrakshan_server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o -MF CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o.d -o CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o -c /home/aaryamaan/Desktop/Sanrakshan/backend/src/SimulationEngine.cpp
+
+CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/aaryamaan/Desktop/Sanrakshan/backend/src/SimulationEngine.cpp > CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.i
+
+CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/aaryamaan/Desktop/Sanrakshan/backend/src/SimulationEngine.cpp -o CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.s
+
+CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o: CMakeFiles/sanrakshan_server.dir/flags.make
+CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o: /home/aaryamaan/Desktop/Sanrakshan/backend/src/WebServer.cpp
+CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o: CMakeFiles/sanrakshan_server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o -MF CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o.d -o CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o -c /home/aaryamaan/Desktop/Sanrakshan/backend/src/WebServer.cpp
+
+CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/aaryamaan/Desktop/Sanrakshan/backend/src/WebServer.cpp > CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.i
+
+CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/aaryamaan/Desktop/Sanrakshan/backend/src/WebServer.cpp -o CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.s
+
 # Object files for target sanrakshan_server
 sanrakshan_server_OBJECTS = \
-"CMakeFiles/sanrakshan_server.dir/src/main.cpp.o"
+"CMakeFiles/sanrakshan_server.dir/src/main.cpp.o" \
+"CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o" \
+"CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o" \
+"CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o"
 
 # External object files for target sanrakshan_server
 sanrakshan_server_EXTERNAL_OBJECTS =
 
 sanrakshan_server: CMakeFiles/sanrakshan_server.dir/src/main.cpp.o
+sanrakshan_server: CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o
+sanrakshan_server: CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o
+sanrakshan_server: CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o
 sanrakshan_server: CMakeFiles/sanrakshan_server.dir/build.make
 sanrakshan_server: CMakeFiles/sanrakshan_server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable sanrakshan_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable sanrakshan_server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/sanrakshan_server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

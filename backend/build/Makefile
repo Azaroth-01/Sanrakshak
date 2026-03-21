@@ -129,6 +129,78 @@ sanrakshan_server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/build
 .PHONY : sanrakshan_server/fast
 
+src/NetworkGraph.o: src/NetworkGraph.cpp.o
+.PHONY : src/NetworkGraph.o
+
+# target to build an object file
+src/NetworkGraph.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o
+.PHONY : src/NetworkGraph.cpp.o
+
+src/NetworkGraph.i: src/NetworkGraph.cpp.i
+.PHONY : src/NetworkGraph.i
+
+# target to preprocess a source file
+src/NetworkGraph.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.i
+.PHONY : src/NetworkGraph.cpp.i
+
+src/NetworkGraph.s: src/NetworkGraph.cpp.s
+.PHONY : src/NetworkGraph.s
+
+# target to generate assembly for a file
+src/NetworkGraph.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.s
+.PHONY : src/NetworkGraph.cpp.s
+
+src/SimulationEngine.o: src/SimulationEngine.cpp.o
+.PHONY : src/SimulationEngine.o
+
+# target to build an object file
+src/SimulationEngine.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.o
+.PHONY : src/SimulationEngine.cpp.o
+
+src/SimulationEngine.i: src/SimulationEngine.cpp.i
+.PHONY : src/SimulationEngine.i
+
+# target to preprocess a source file
+src/SimulationEngine.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.i
+.PHONY : src/SimulationEngine.cpp.i
+
+src/SimulationEngine.s: src/SimulationEngine.cpp.s
+.PHONY : src/SimulationEngine.s
+
+# target to generate assembly for a file
+src/SimulationEngine.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/SimulationEngine.cpp.s
+.PHONY : src/SimulationEngine.cpp.s
+
+src/WebServer.o: src/WebServer.cpp.o
+.PHONY : src/WebServer.o
+
+# target to build an object file
+src/WebServer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.o
+.PHONY : src/WebServer.cpp.o
+
+src/WebServer.i: src/WebServer.cpp.i
+.PHONY : src/WebServer.i
+
+# target to preprocess a source file
+src/WebServer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.i
+.PHONY : src/WebServer.cpp.i
+
+src/WebServer.s: src/WebServer.cpp.s
+.PHONY : src/WebServer.s
+
+# target to generate assembly for a file
+src/WebServer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/src/WebServer.cpp.s
+.PHONY : src/WebServer.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -162,6 +234,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... sanrakshan_server"
+	@echo "... src/NetworkGraph.o"
+	@echo "... src/NetworkGraph.i"
+	@echo "... src/NetworkGraph.s"
+	@echo "... src/SimulationEngine.o"
+	@echo "... src/SimulationEngine.i"
+	@echo "... src/SimulationEngine.s"
+	@echo "... src/WebServer.o"
+	@echo "... src/WebServer.i"
+	@echo "... src/WebServer.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

@@ -1,11 +1,15 @@
 #pragma once
 
+#include "crow_all.h"
 #include <string>
 
 namespace WebServer {
-    // Starts the Crow server and blocks the main thread
-    void startServer(int port);
+    // 1. Configures the HTTP and WebSocket routes
+    void setupRoutes(crow::SimpleApp& app);
 
-    // Called by the SimulationEngine every 100ms to push JSON to the frontend
-    void broadcastState();
+    // 2. Starts the background thread that sends JSON updates
+    void startBroadcaster();
+
+    // 3. Helper function to generate the map layout JSON
+    std::string getMapDataJson();
 }

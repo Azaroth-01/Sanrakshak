@@ -81,12 +81,12 @@ clean: CMakeFiles/sanrakshan_server.dir/clean
 CMakeFiles/sanrakshan_server.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sanrakshan_server.dir/build.make CMakeFiles/sanrakshan_server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=1,2 "Built target sanrakshan_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles --progress-num=1,2,3,4,5 "Built target sanrakshan_server"
 .PHONY : CMakeFiles/sanrakshan_server.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/sanrakshan_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/sanrakshan_server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/aaryamaan/Desktop/Sanrakshan/backend/build/CMakeFiles 0
 .PHONY : CMakeFiles/sanrakshan_server.dir/rule

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanrakshan Command Center</title>
+    <style>
+        body { background-color: #0f172a; color: #38bdf8; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; user-select: none; }
+        #header { padding: 15px; text-align: center; border-bottom: 2px solid #1e293b; background: #020617; text-transform: uppercase; font-weight: bold; }
+        #status { color: #22c55e; font-size: 14px; margin-top: 5px; }
+        #instructions { color: #facc15; font-size: 12px; margin-top: 5px; }
+        #map-container { position: relative; width: 100vw; height: calc(100vh - 80px); cursor: crosshair; }
+        
+        /* Stations */
+        .station {
+            position: absolute; width: 18px; height: 18px; background: #38bdf8;
+            border-radius: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #38bdf8; z-index: 10; cursor: pointer; transition: 0.2s;
+        }
+        .station:hover { transform: translate(-50%, -50%) scale(1.5); background: #facc15; box-shadow: 0 0 15px #facc15; }
+        .station.selected { background: #22c55e; box-shadow: 0 0 20px #22c55e; border: 2px solid white; }
+        
+        .station-label { position: absolute; color: #cbd5e1; transform: translate(15px, -15px); font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px black; pointer-events: none; }
+        .station-geo { position: absolute; color: #64748b; transform: translate(15px, 0px); font-size: 10px; pointer-events: none; white-space: nowrap; }
+
+        /* Railway Tracks (-|-|-|-) */
+        .track {
+            position: absolute;
+            height: 12px; /* Track width */
+            /* The Magic Railway CSS */
+            background-image: 
+                linear-gradient(0deg, transparent 20%, #94a3b8 20%, #94a3b8 35%, transparent 35%, transparent 65%, #94a3b8 65%, #94a3b8 80%, transparent 80%), /* Steel Rails */
+                repeating-linear-gradient(90deg, #334155, #334155 4px, transparent 4px, transparent 16px); /* Wooden Sleepers */
+            transform-origin: 0 50%; z-index: 5; cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .track:hover { filter: brightness(1.8) sepia(1) hue-rotate(-50deg) saturate(5); } /* Glows orange on hover to indicate deletion */
+
+        /* Smooth Moving Trains */
+        .train {
+            position: absolute; width: 22px; height: 22px; background: #ef4444;
+            border-radius: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #ef4444, inset 0 0 5px white; z-index: 20;
+            transition: left 0.5s linear, top 0.5s linear; pointer-events: none;
+        }
+        .train-label { position: absolute; color: #fca5a5; transform: translate(15px, -25px); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px black; white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <div id="header">
+        Sanrakshan Control System :: Map Builder Mode
+        <div id="status">Connecting to Engine...</div>
+        <div id="instructions">Left-Click Map: Add Station | Click 2 Stations: Lay Track | Right-Click: Delete</div>
+    </div>
+    <div id="map-container"></div>
+    <script src="app.js"></script>
+</body>
+</html>

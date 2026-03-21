@@ -15,9 +15,9 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 # Note: We are only compiling main.cpp for now. We will uncomment the others later.
 add_executable(sanrakshan_server 
     src/main.cpp
-    # src/NetworkGraph.cpp     
-    # src/SimulationEngine.cpp 
-    # src/WebServer.cpp        
+    src/NetworkGraph.cpp     
+     src/SimulationEngine.cpp 
+     src/WebServer.cpp        
 )
 
 # Link the threading library to our executable
