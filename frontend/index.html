@@ -3,56 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanrakshan Command Center</title>
+    <title>Sanrakshan CTC Interlocking Panel</title>
     <style>
-        body { background-color: #0f172a; color: #38bdf8; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; user-select: none; }
-        #header { padding: 15px; text-align: center; border-bottom: 2px solid #1e293b; background: #020617; text-transform: uppercase; font-weight: bold; }
-        #status { color: #22c55e; font-size: 14px; margin-top: 5px; }
-        #instructions { color: #facc15; font-size: 12px; margin-top: 5px; }
-        #map-container { position: relative; width: 100vw; height: calc(100vh - 80px); cursor: crosshair; }
-        
-        /* Stations */
-        .station {
-            position: absolute; width: 18px; height: 18px; background: #38bdf8;
-            border-radius: 50%; transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px #38bdf8; z-index: 10; cursor: pointer; transition: 0.2s;
+        body { 
+            background-color: #020617; /* The dark slate background */
+            color: #ffffff; font-family: 'Courier New', monospace; 
+            margin: 0; overflow: hidden; user-select: none;
         }
-        .station:hover { transform: translate(-50%, -50%) scale(1.5); background: #facc15; box-shadow: 0 0 15px #facc15; }
-        .station.selected { background: #22c55e; box-shadow: 0 0 20px #22c55e; border: 2px solid white; }
+        #header { padding: 10px 20px; border-bottom: 2px solid #1e293b; background: rgba(2, 6, 23, 0.9); display: flex; justify-content: space-between; align-items: center;}
+        .title { text-transform: uppercase; font-weight: bold; font-size: 18px; color: #38bdf8; letter-spacing: 2px;}
+        #status { color: #22c55e; font-size: 14px; font-weight: bold; }
         
-        .station-label { position: absolute; color: #cbd5e1; transform: translate(15px, -15px); font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px black; pointer-events: none; }
-        .station-geo { position: absolute; color: #64748b; transform: translate(15px, 0px); font-size: 10px; pointer-events: none; white-space: nowrap; }
-
-        /* Railway Tracks (-|-|-|-) */
-        .track {
-            position: absolute;
-            height: 12px; /* Track width */
-            /* The Magic Railway CSS */
+        #map-container { 
+            position: absolute; top: 50px; left: 0; width: calc(100vw - 300px); height: calc(100vh - 50px); 
+            cursor: crosshair; 
+            /* RESTORED: The beautiful Authentic SCADA Engineering Grid */
             background-image: 
-                linear-gradient(0deg, transparent 20%, #94a3b8 20%, #94a3b8 35%, transparent 35%, transparent 65%, #94a3b8 65%, #94a3b8 80%, transparent 80%), /* Steel Rails */
-                repeating-linear-gradient(90deg, #334155, #334155 4px, transparent 4px, transparent 16px); /* Wooden Sleepers */
-            transform-origin: 0 50%; z-index: 5; cursor: pointer;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+                linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
-        .track:hover { filter: brightness(1.8) sepia(1) hue-rotate(-50deg) saturate(5); } /* Glows orange on hover to indicate deletion */
+        
+        /* SCADA TRACKS & SABOTAGE */
+        .track { position: absolute; height: 6px; background: #555; transform-origin: 0 50%; z-index: 5; transition: 0.1s; box-shadow: 0 0 2px #000; pointer-events: auto;}
+        .track.locked { background: #ff0000; box-shadow: 0 0 10px #ff0000; } 
+        .track.broken { background: #fbbf24 !important; box-shadow: 0 0 15px #fbbf24; animation: spark 0.2s infinite alternate; }
+        @keyframes spark { 0% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        /* Smooth Moving Trains */
-        .train {
-            position: absolute; width: 22px; height: 22px; background: #ef4444;
-            border-radius: 50%; transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px #ef4444, inset 0 0 5px white; z-index: 20;
-            transition: left 0.5s linear, top 0.5s linear; pointer-events: none;
-        }
-        .train-label { position: absolute; color: #fca5a5; transform: translate(15px, -25px); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px black; white-space: nowrap; }
+        /* SCADA SIGNALS */
+        .scada-signal { position: absolute; display: flex; background: #222; border: 1px solid #777; padding: 2px; border-radius: 2px; transform: translate(-50%, -150%); z-index: 15; pointer-events: none; }
+        .scada-signal::after { content: ''; position: absolute; bottom: -8px; left: 50%; width: 2px; height: 8px; background: #777; }
+        .light { width: 6px; height: 6px; border-radius: 50%; background: #111; margin: 0 2px; border: 1px solid #000; }
+        .scada-signal.clear .light.g { background: #00ff00; box-shadow: 0 0 6px #00ff00; }
+        .scada-signal.danger .light.r { background: #ff0000; box-shadow: 0 0 6px #ff0000; }
+
+        /* STATIONS & TRAINS */
+        .station { position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; border: 2px solid #333; transition: 0.2s;}
+        .station:hover { scale: 1.3; background: #38bdf8; }
+        .station-label { position: absolute; color: #38bdf8; transform: translate(-50%, 15px); font-size: 11px; font-weight: bold; pointer-events: none; white-space: nowrap;}
+        
+        .train { position: absolute; padding: 2px 8px; background: #facc15; color: #000; font-size: 10px; font-weight: bold; transform: translate(-50%, -50%); border-radius: 3px; z-index: 20; transition: all 0.4s linear; pointer-events: none; box-shadow: 0 0 12px #facc15; }
+        .train.Express { background: #22c55e; box-shadow: 0 0 15px #22c55e; color: #000;}
+        .train.Freight { background: #f97316; box-shadow: 0 0 15px #f97316; padding: 4px 10px; color: #fff;}
+
+        /* PANELS */
+        #telemetry-panel { position: absolute; right: 0; top: 50px; width: 300px; height: calc(100vh - 50px); background: #0a0a0a; border-left: 2px solid #333; display: flex; flex-direction: column; }
+        .panel-header { background: #222; padding: 10px; color: white; font-weight: bold; text-align: center; border-bottom: 1px solid #444;}
+        #event-log { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 11px; color: #ccc; }
+        
+        /* QUICK CONTROLS (Restored!) */
+        #quick-controls { position: absolute; bottom: 20px; left: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; width: 250px;}
+        
+        /* MODALS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: rgba(15, 23, 42, 0.95); border: 2px solid #38bdf8; border-radius: 12px; padding: 25px; width: 350px; box-shadow: 0 0 40px rgba(56, 189, 248, 0.3); display: flex; flex-direction: column; gap: 15px; }
+        .modal-title { color: #facc15; font-size: 18px; font-weight: bold; border-bottom: 1px solid #334155; padding-bottom: 10px; text-transform: uppercase; }
+        .modal-input { background: #020617; border: 1px solid #334155; color: #0f0; padding: 10px; font-family: 'Courier New'; font-size: 14px; }
+        .modal-btn { background: #0284c7; color: #fff; border: none; padding: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .modal-btn:hover { background: #38bdf8; color: #000; }
+        .modal-btn.cancel { background: #475569; margin-top: -5px; }
+        
+        /* E-STOP FLASH */
+        #estop-overlay { display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 999; animation: flash 1s infinite; }
+        @keyframes flash { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
     <div id="header">
-        Sanrakshan Control System :: Map Builder Mode
-        <div id="status">Connecting to Engine...</div>
-        <div id="instructions">Left-Click Map: Add Station | Click 2 Stations: Lay Track | Right-Click: Delete</div>
+        <div class="title">SANRAKSHAN CTC // BHOR GHAT SECTOR</div>
+        <div id="status">SYS.OFFLINE</div>
     </div>
+    
     <div id="map-container"></div>
+    
+    <div id="quick-controls">
+        <button class="modal-btn" style="background: #b45309; border: 1px solid #f59e0b;" onclick="loadDemoMap()">[ AUTO-BUILD YARD ]</button>
+        <button id="estop-btn" class="modal-btn" style="background: #991b1b; border: 2px solid #ef4444;" onclick="toggleEStop()">EMERGENCY STOP</button>
+    </div>
+    
+    <div id="build-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Construct New Node</div>
+            <input type="text" id="new-station-id" class="modal-input" placeholder="Station ID (e.g., PUNE)">
+            <button class="modal-btn" onclick="submitStation()">BUILD STATION</button>
+            <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
+        </div>
+    </div>
+
+    <div id="dispatch-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Central Dispatch</div>
+            <input type="text" id="disp-src" class="modal-input" readonly style="color: #94a3b8;">
+            <input type="text" id="disp-tgt" class="modal-input" placeholder="Destination ID (e.g., E_YARD)">
+            <input type="text" id="disp-name" class="modal-input" placeholder="Train Call-Sign (e.g., T-Alpha)">
+            <select id="disp-type" class="modal-input">
+                <option value="Express">Express (Priority 1 - Fast)</option>
+                <option value="Local">Local (Priority 2 - Medium)</option>
+                <option value="Freight">Freight (Priority 3 - Slow)</option>
+            </select>
+            <button class="modal-btn" style="background: #22c55e;" onclick="submitDispatch()">AUTHORIZE LAUNCH</button>
+            <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
+        </div>
+    </div>
+    
+    <div id="telemetry-panel">
+        <div class="panel-header">INTERLOCK TELEMETRY</div>
+        <div id="event-log"></div>
+    </div>
+    <div id="estop-overlay"></div>
+
     <script src="app.js"></script>
 </body>
 </html>

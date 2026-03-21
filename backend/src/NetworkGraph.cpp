@@ -1,5 +1,8 @@
 #include "NetworkGraph.hpp"
 #include <iostream>
+#include <queue>
+#include <limits>
+#include <algorithm>
 
 namespace NetworkGraph {
     // 1. Define the global variables that were declared 'extern' in the header
@@ -53,5 +56,56 @@ namespace NetworkGraph {
         addTrack("LNL-PUNE", "LNL", "PUNE", 64, 110);
         
         std::cout << "[GRAPH] Network Ready: " << stations.size() << " stations, " << tracks.size() << " tracks.\n" << std::endl;
+    }
+
+    // --- DIJKSTRA'S ALGORITHM IMPLEMENTATION ---
+    std::vector<std::string> calculateShortestPath(const std::string& src, const std::string& tgt) {
+        std::unordered_map<std::string, int> distances;
+        std::unordered_map<std::string, std::string> previous;
+        
+        // Priority queue to get the node with the shortest distance
+        auto cmp = [&distances](const std::string& left, const std::string& right) { return distances[left] > distances[right]; };
+        std::priority_queue<std::string, std::vector<std::string>, decltype(cmp)> queue(cmp);
+
+        std::lock_guard<std::mutex> lock(graph_mutex);
+
+        // Initialize distances to infinity
+        for (const auto& pair : stations) {
+            distances[pair.first] = std::numeric_limits<int>::max();
+        }
+        
+        distances[src] = 0;
+        queue.push(src);
+
+        while (!queue.empty()) {
+            std::string current = queue.top();
+            queue.pop();
+
+            if (current == tgt) break; // Reached destination!
+
+            for (const auto& track : stations[current]->connected_tracks) {
+                if (track->is_broken) continue; // NEW: AI Router ignores destroyed tracks!
+
+                std::string neighbor = (track->source_id == current) ? track->target_id : track->source_id;
+                int alt = distances[current] + track->length_km;
+                
+                if (alt < distances[neighbor]) {
+                    distances[neighbor] = alt;
+                    previous[neighbor] = current;
+                    queue.push(neighbor);
+                }
+            }
+        }
+
+        // Backtrack to build the route
+        std::vector<std::string> path;
+        for (std::string at = tgt; at != ""; at = previous[at]) {
+            path.push_back(at);
+            if (at == src) break;
+        }
+        std::reverse(path.begin(), path.end());
+        
+        if (path.size() > 0 && path[0] == src) return path;
+        return {}; // Return empty if no path exists
     }
 }

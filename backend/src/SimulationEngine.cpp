@@ -7,47 +7,65 @@ namespace SimulationEngine {
     std::atomic<bool> is_simulation_running(true);
     std::unordered_map<std::string, std::shared_ptr<Train>> active_trains;
     std::vector<std::thread> train_threads;
+    std::atomic<bool> global_estop(false);
 
     // This is the lifecycle of a single Train
-    void trainThreadFunction(std::shared_ptr<Train> train) {
-        std::cout << "[TRAIN] " << train->id << " (" << train->type << ") departing from " << train->current_location << "\n";
+void trainThreadFunction(std::shared_ptr<Train> train) {
+        std::cout << "[ENGINE] Train " << train->id << " (" << train->type << ") departing " << train->route[0] << std::endl;
 
-        // Loop through the train's requested route
         for (size_t i = 1; i < train->route.size(); ++i) {
-            std::string next_station = train->route[i];
-            std::shared_ptr<TrackSegment> target_track = nullptr;
+            while (global_estop) { std::this_thread::sleep_for(std::chrono::milliseconds(200)); }
 
-            // 1. Find the track that connects our current location to the next station
-            for (auto& track : NetworkGraph::stations[train->current_location]->connected_tracks) {
-                if (track->target_id == next_station || track->source_id == next_station) {
-                    target_track = track;
-                    break;
-                }
+            std::string next_station = train->route[i];
+
+            // 1. DYNAMIC FAULT CHECK: Is the track ahead sabotaged?
+            std::string t_id1 = train->current_location + "-" + next_station;
+            std::string t_id2 = next_station + "-" + train->current_location;
+            bool track_broken = false;
+            {
+                std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+                if (NetworkGraph::tracks.count(t_id1) && NetworkGraph::tracks[t_id1]->is_broken) track_broken = true;
+                if (NetworkGraph::tracks.count(t_id2) && NetworkGraph::tracks[t_id2]->is_broken) track_broken = true;
             }
 
-            if (!target_track) break; // Dead end (shouldn't happen on our map)
+            if (track_broken) {
+                std::cout << "[SYSTEM ALARM] Train " << train->id << " detected broken track ahead! Recalculating detour...\n";
+                std::vector<std::string> new_route = NetworkGraph::calculateShortestPath(train->current_location, train->route.back());
+                
+                if (new_route.size() < 2) {
+                    std::cout << "[SYSTEM ALARM] Train " << train->id << " is STRANDED. No alternate route exists.\n";
+                    break; // Terminate train thread
+                }
+                train->route = new_route;
+                i = 0; // Reset index to follow new route
+                continue; 
+            }
 
-            std::cout << "[TRAIN] " << train->id << " approaching segment: " << target_track->id << "\n";
-
-            // 2. THE CRITICAL SECTION (Resource Locking)
+            // 2. Lock the track and move
+            std::shared_ptr<TrackSegment> target_track = nullptr;
             {
-                // This line halts the thread if another train is already on the track
-                std::unique_lock<std::mutex> lock(target_track->segment_lock);
-                
-                std::cout << "  >>> [LOCKED] " << train->id << " entered " << target_track->id << "!\n";
+                std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+                if (NetworkGraph::tracks.count(t_id1)) target_track = NetworkGraph::tracks[t_id1];
+                else if (NetworkGraph::tracks.count(t_id2)) target_track = NetworkGraph::tracks[t_id2];
+            }
 
-                // Simulate travel time based on track length and speed limit
-                int travel_time_ms = (target_track->length_km * 100) / (target_track->max_speed > 0 ? target_track->max_speed : 1);
+            if (target_track) {
+                std::lock_guard<std::mutex> track_lock(target_track->segment_lock);
+                train->current_location = target_track->id;
                 
-                // Sleep the thread to simulate the train moving
-                std::this_thread::sleep_for(std::chrono::milliseconds(travel_time_ms * 10));
+                // 3. APPLY TRAIN PHYSICS (Speeds)
+                int speed_ms = 400; // Local Default
+                if (train->type == "Express") speed_ms = 150; // Fastest
+                else if (train->type == "Freight") speed_ms = 800; // Slow, causes bottlenecks
 
-                train->current_location = next_station;
-                std::cout << "  <<< [RELEASED] " << train->id << " cleared " << target_track->id << " and reached " << next_station << ".\n";
-            } // The mutex lock is automatically released here when it goes out of scope!
+                std::this_thread::sleep_for(std::chrono::milliseconds(speed_ms));
+            }
+            train->current_location = next_station;
         }
 
-        std::cout << "[TRAIN] " << train->id << " arrived at final destination: " << train->current_location << "\n";
+        std::cout << "[ENGINE] Train " << train->id << " reached final destination." << std::endl;
+        std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+        active_trains.erase(train->id);
     }
 
     // Helper to create a train and start its thread

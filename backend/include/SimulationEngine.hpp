@@ -10,6 +10,7 @@
 namespace SimulationEngine {
     // Global flag to pause threads when adding new tracks from the UI
     extern std::atomic<bool> is_simulation_running;
+    extern std::atomic<bool> global_estop;
 
     // Keep track of active trains
     extern std::unordered_map<std::string, std::shared_ptr<Train>> active_trains;

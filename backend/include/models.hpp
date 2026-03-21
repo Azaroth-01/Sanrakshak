@@ -7,18 +7,17 @@
 
 // The Shared Resource
 struct TrackSegment {
-    std::string id;
-    std::string source_id;
-    std::string target_id;
-    int length_km;
-    int max_speed;
-    
-    // The most important line in the project. This prevents collisions.
-    std::mutex segment_lock; 
-
-    TrackSegment(std::string i, std::string src, std::string tgt, int len, int spd) 
-        : id(i), source_id(src), target_id(tgt), length_km(len), max_speed(spd) {}
-};
+        std::string id;
+        std::string source_id;
+        std::string target_id;
+        int length_km;
+        int max_speed;
+        std::mutex segment_lock;
+        bool is_broken = false; // NEW: Fault Injection Flag
+        
+        TrackSegment(std::string id, std::string src, std::string tgt, int len, int spd)
+            : id(id), source_id(src), target_id(tgt), length_km(len), max_speed(spd) {}
+    };
 
 // The Node
 struct Station {
