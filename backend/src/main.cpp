@@ -1,25 +1,20 @@
-#include "crow_all.h"
-#include "NetworkGraph.hpp"
-#include "SimulationEngine.hpp"
 #include "WebServer.hpp"
+#include "crow_all.h"
 #include <iostream>
 
 int main() {
-    crow::SimpleApp app;
+    std::cout << "========================================" << std::endl;
+    std::cout << "  SANRAKSHAN CTC ENGINE ONLINE" << std::endl;
+    std::cout << "========================================" << std::endl;
 
-    std::cout << "==========================================" << std::endl;
-    std::cout << "[SYSTEM] Booting Sanrakshan Engine..." << std::endl;
-    std::cout << "==========================================" << std::endl;
-
-    // --- 1. INITIALIZE DATA ---
-    NetworkGraph::initializeMumbaiPuneNetwork();
-    
-    // --- 2. START BACKGROUND THREADS ---
-    SimulationEngine::startEngine();
+    // 1. Start the Live Telemetry Broadcaster
     WebServer::startBroadcaster();
 
-    // --- 3. CONFIGURE WEB SERVER & RUN ---
+    // 2. Setup and Start the Crow Web Server
+    crow::SimpleApp app;
     WebServer::setupRoutes(app);
+    
+    std::cout << "Listening for UI connections on port 8080..." << std::endl;
     app.port(8080).multithreaded().run();
 
     return 0;

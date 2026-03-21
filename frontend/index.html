@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,38 +6,33 @@
     <title>Sanrakshan CTC Interlocking Panel</title>
     <style>
         body { 
-            background-color: #020617; /* The dark slate background */
-            color: #ffffff; font-family: 'Courier New', monospace; 
+            background-color: #020617; color: #ffffff; font-family: 'Courier New', monospace; 
             margin: 0; overflow: hidden; user-select: none;
         }
+        
+        /* HEADER - MERGED & FIXED */
         #header { padding: 10px 20px; border-bottom: 2px solid #1e293b; background: rgba(2, 6, 23, 0.9); display: flex; justify-content: space-between; align-items: center;}
         .title { text-transform: uppercase; font-weight: bold; font-size: 18px; color: #38bdf8; letter-spacing: 2px;}
+        #sim-clock { color: #facc15; font-size: 16px; font-weight: bold; border: 1px solid #facc15; padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; background: #000; }
         #status { color: #22c55e; font-size: 14px; font-weight: bold; }
         
         #map-container { 
             position: absolute; top: 50px; left: 0; width: calc(100vw - 300px); height: calc(100vh - 50px); 
-            cursor: crosshair; 
-            /* RESTORED: The beautiful Authentic SCADA Engineering Grid */
-            background-image: 
-                linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+            cursor: crosshair; background-image: linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
             background-size: 40px 40px;
         }
         
-        /* SCADA TRACKS & SABOTAGE */
         .track { position: absolute; height: 6px; background: #555; transform-origin: 0 50%; z-index: 5; transition: 0.1s; box-shadow: 0 0 2px #000; pointer-events: auto;}
         .track.locked { background: #ff0000; box-shadow: 0 0 10px #ff0000; } 
         .track.broken { background: #fbbf24 !important; box-shadow: 0 0 15px #fbbf24; animation: spark 0.2s infinite alternate; }
         @keyframes spark { 0% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        /* SCADA SIGNALS */
         .scada-signal { position: absolute; display: flex; background: #222; border: 1px solid #777; padding: 2px; border-radius: 2px; transform: translate(-50%, -150%); z-index: 15; pointer-events: none; }
         .scada-signal::after { content: ''; position: absolute; bottom: -8px; left: 50%; width: 2px; height: 8px; background: #777; }
         .light { width: 6px; height: 6px; border-radius: 50%; background: #111; margin: 0 2px; border: 1px solid #000; }
         .scada-signal.clear .light.g { background: #00ff00; box-shadow: 0 0 6px #00ff00; }
         .scada-signal.danger .light.r { background: #ff0000; box-shadow: 0 0 6px #ff0000; }
 
-        /* STATIONS & TRAINS */
         .station { position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; border: 2px solid #333; transition: 0.2s;}
         .station:hover { scale: 1.3; background: #38bdf8; }
         .station-label { position: absolute; color: #38bdf8; transform: translate(-50%, 15px); font-size: 11px; font-weight: bold; pointer-events: none; white-space: nowrap;}
@@ -46,15 +41,14 @@
         .train.Express { background: #22c55e; box-shadow: 0 0 15px #22c55e; color: #000;}
         .train.Freight { background: #f97316; box-shadow: 0 0 15px #f97316; padding: 4px 10px; color: #fff;}
 
-        /* PANELS */
+        /* PANELS - Added the Schedule Board Area */
         #telemetry-panel { position: absolute; right: 0; top: 50px; width: 300px; height: calc(100vh - 50px); background: #0a0a0a; border-left: 2px solid #333; display: flex; flex-direction: column; }
         .panel-header { background: #222; padding: 10px; color: white; font-weight: bold; text-align: center; border-bottom: 1px solid #444;}
+        #schedule-board { height: 120px; border-bottom: 2px dashed #444; padding: 10px; overflow-y: auto; background: #111; font-size: 11px; color: #38bdf8; }
         #event-log { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 11px; color: #ccc; }
         
-        /* QUICK CONTROLS (Restored!) */
         #quick-controls { position: absolute; bottom: 20px; left: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; width: 250px;}
         
-        /* MODALS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
         .modal-box { background: rgba(15, 23, 42, 0.95); border: 2px solid #38bdf8; border-radius: 12px; padding: 25px; width: 350px; box-shadow: 0 0 40px rgba(56, 189, 248, 0.3); display: flex; flex-direction: column; gap: 15px; }
         .modal-title { color: #facc15; font-size: 18px; font-weight: bold; border-bottom: 1px solid #334155; padding-bottom: 10px; text-transform: uppercase; }
@@ -63,20 +57,26 @@
         .modal-btn:hover { background: #38bdf8; color: #000; }
         .modal-btn.cancel { background: #475569; margin-top: -5px; }
         
-        /* E-STOP FLASH */
         #estop-overlay { display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 999; animation: flash 1s infinite; }
         @keyframes flash { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
     <div id="header">
-        <div class="title">SANRAKSHAN CTC // BHOR GHAT SECTOR</div>
+        <div class="title">SANRAKSHAN CTC (Centralized Traffic Control)</div>
+        <div id="sim-clock">CLOCK: 00:00 (PAUSED)</div>
         <div id="status">SYS.OFFLINE</div>
     </div>
     
     <div id="map-container"></div>
     
     <div id="quick-controls">
+        <div style="display: flex; gap: 10px; align-items: center; background: rgba(15,23,42,0.9); padding: 10px; border: 1px solid #334155; border-radius: 4px;">
+            <input type="time" id="manual-time" value="22:40" class="modal-input" style="width: 120px; padding: 5px;">
+            <button class="modal-btn" style="background: #0284c7; padding: 8px;" onclick="setManualTime()">SET CLOCK</button>
+        </div>
+        
+        <button class="modal-btn" style="background: #22c55e; border: 1px solid #16a34a; font-size: 16px;" onclick="startSimulation()">[ START SIMULATION ]</button>
         <button class="modal-btn" style="background: #b45309; border: 1px solid #f59e0b;" onclick="loadDemoMap()">[ AUTO-BUILD YARD ]</button>
         <button id="estop-btn" class="modal-btn" style="background: #991b1b; border: 2px solid #ef4444;" onclick="toggleEStop()">EMERGENCY STOP</button>
     </div>
@@ -95,6 +95,7 @@
             <div class="modal-title">Central Dispatch</div>
             <input type="text" id="disp-src" class="modal-input" readonly style="color: #94a3b8;">
             <input type="text" id="disp-tgt" class="modal-input" placeholder="Destination ID (e.g., E_YARD)">
+           <input type="time" id="disp-time" class="modal-input" value="22:50" required> 
             <input type="text" id="disp-name" class="modal-input" placeholder="Train Call-Sign (e.g., T-Alpha)">
             <select id="disp-type" class="modal-input">
                 <option value="Express">Express (Priority 1 - Fast)</option>
@@ -108,10 +109,694 @@
     
     <div id="telemetry-panel">
         <div class="panel-header">INTERLOCK TELEMETRY</div>
+        <div id="schedule-board">
+            <div style="color: #fff; margin-bottom: 5px; text-decoration: underline;">PENDING DEPARTURES</div>
+        </div>
         <div id="event-log"></div>
     </div>
+
     <div id="estop-overlay"></div>
 
     <script src="app.js"></script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanrakshan CTC Interlocking Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void:       #050c18;
+            --bg-panel:      #070f1e;
+            --bg-surface:    #0b1627;
+            --bg-card:       #0f1e33;
+            --border-dim:    #1a2d4a;
+            --border-mid:    #1e3a5f;
+            --border-accent: #2563a8;
+
+            --track-idle:    #2a4a72;
+            --track-locked:  #c0392b;
+            --track-broken:  #f39c12;
+
+            --sig-green:     #00e676;
+            --sig-red:       #ff1744;
+            --sig-yellow:    #ffea00;
+
+            --node-fill:     #e8f4fd;
+            --node-stroke:   #5ba8d4;
+            --node-active:   #00bcd4;
+
+            --train-express: #00e676;
+            --train-local:   #facc15;
+            --train-freight: #ff7043;
+
+            --text-primary:  #d0e8f8;
+            --text-dim:      #5a8ab0;
+            --text-accent:   #38bdf8;
+            --text-warn:     #facc15;
+            --text-danger:   #ff4444;
+            --text-ok:       #22c55e;
+
+            --header-h:      52px;
+            --panel-w:       290px;
+            --font-mono:     'Share Tech Mono', monospace;
+            --font-ui:       'Rajdhani', sans-serif;
+
+            --crossover-color: #e67e22;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg-void);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            overflow: hidden;
+            user-select: none;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ── SCANLINE OVERLAY ── */
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 3px,
+                rgba(0,0,0,0.08) 3px,
+                rgba(0,0,0,0.08) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ══════════════════════ HEADER ══════════════════════ */
+        #header {
+            height: var(--header-h);
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--border-mid);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            gap: 12px;
+            position: relative;
+            z-index: 50;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.6);
+        }
+
+        .hdr-left { display: flex; align-items: center; gap: 14px; }
+        .hdr-logo {
+            width: 32px; height: 32px;
+            border: 2px solid var(--text-accent);
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: var(--text-accent);
+            background: rgba(56,189,248,0.1);
+            flex-shrink: 0;
+        }
+        .hdr-title {
+            font-family: var(--font-ui);
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-accent);
+        }
+        .hdr-sub {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+        }
+
+        #sim-clock {
+            font-family: var(--font-mono);
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-warn);
+            background: #000;
+            border: 1px solid var(--text-warn);
+            padding: 4px 14px;
+            border-radius: 3px;
+            letter-spacing: 3px;
+            box-shadow: 0 0 12px rgba(250,204,21,0.25), inset 0 0 8px rgba(0,0,0,0.8);
+            min-width: 230px;
+            text-align: center;
+        }
+
+        .hdr-right { display: flex; align-items: center; gap: 14px; }
+        #status {
+            font-family: var(--font-ui);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-ok);
+            display: flex; align-items: center; gap: 6px;
+        }
+        #status::before {
+            content: '';
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--text-ok);
+            box-shadow: 0 0 8px var(--text-ok);
+            animation: blink 2s infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Legend strip */
+        .legend-strip {
+            display: flex; gap: 14px; align-items: center;
+            border-left: 1px solid var(--border-dim);
+            padding-left: 14px;
+        }
+        .leg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-dim); font-family: var(--font-ui); font-weight: 600; letter-spacing: 1px; }
+        .leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+        /* ══════════════════════ MAP ══════════════════════ */
+        #map-container {
+            position: absolute;
+            top: var(--header-h);
+            left: 0;
+            width: calc(100vw - var(--panel-w));
+            height: calc(100vh - var(--header-h));
+            cursor: crosshair;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* white dot grid at intersections */
+        #map-container::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── TRACKS ── */
+        /* Up track (slightly offset above) */
+        .track-up, .track-dn {
+            position: absolute;
+            height: 3px;
+            transform-origin: 0 50%;
+            z-index: 5;
+            pointer-events: auto;
+            transition: background 0.15s;
+            border-radius: 1px;
+        }
+        .track-up {
+            background: var(--track-idle);
+            box-shadow: 0 0 4px rgba(250, 251, 254, 0.6);
+        }
+        .track-dn {
+            background: color-mix(in srgb, var(--track-idle) 75%, rgb(249, 249, 249) 25%);
+            box-shadow: 0 0 4px rgba(42,74,114,0.6);
+        }
+        .track-up.locked, .track-dn.locked {
+            background: var(--track-locked) !important;
+            box-shadow: 0 0 10px var(--track-locked), 0 0 3px #ffffff;
+        }
+        .track-up.broken, .track-dn.broken {
+            background: var(--track-broken) !important;
+            box-shadow: 0 0 14px var(--track-broken);
+            animation: spark 0.25s infinite alternate;
+        }
+        @keyframes spark { 0%{opacity:1} 100%{opacity:0.45} }
+
+        /* direction arrows on tracks */
+        .track-arrow {
+            position: absolute;
+            pointer-events: none;
+            z-index: 6;
+            font-size: 8px;
+            color: rgba(95, 217, 14, 0.55);
+            line-height: 1;
+        }
+
+        /* ── YARD SPUR (Tail Track) ── */
+        .yard-spur {
+            position: absolute;
+            width: 2px; /* Thin line */
+            height: 50px; /* Length of the yard tail */
+            background: var(--track-idle);
+            z-index: 4;
+            pointer-events: none;
+            transform-origin: top center; /* Allows us to angle it from the station */
+        }
+        
+        /* The Diamond at the end of the yard */
+        .yard-spur::after {
+            content: '';
+            position: absolute;
+            bottom: -6px; /* Position at the very bottom of the line */
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg); /* Rotates a square into a diamond */
+            width: 8px;
+            height: 8px;
+            background: var(--bg-void);
+            border: 2px solid var(--text-dim);
+        }
+
+        /* ── CROSSOVER (diamond) ── */
+        
+
+        /* ── SIGNALS — two horizontal circles ── */
+        .scada-signal {
+            position: absolute;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2px;
+            background: #111;
+            border: 1px solid #333;
+            padding: 2px 3px;
+            border-radius: 8px;
+            transform: translate(-50%, -180%);
+            z-index: 15;
+            pointer-events: none;
+        }
+        /* slim pole */
+        
+        .light {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 1px solid #000;
+            flex-shrink: 0;
+        }
+        /* clear state — green lit, red dark */
+        .scada-signal.clear .light.g  { background: var(--sig-green); box-shadow: 0 0 5px var(--sig-green); }
+        .scada-signal.clear .light.r  { background: #1a1a1a; }
+        /* danger state — red lit, green dark */
+        .scada-signal.danger .light.r { background: var(--sig-red); box-shadow: 0 0 5px var(--sig-red); }
+        .scada-signal.danger .light.g { background: #1a1a1a; }
+
+        /* ── STATIONS ── */
+        .station {
+            position: absolute;
+            width: 20px; height: 20px;
+            background: #1571fa;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            cursor: pointer;
+            border: 2px solid #8ad9fd;
+            transition: all 0.2s;
+            box-shadow: 0 0 8px rgba(250,204,21,0.6);
+        }
+        .station:hover {
+            transform: translate(-50%, -50%) scale(1.35);
+            background: #d927b3e5;
+            border-color: #fff;
+            box-shadow: 0 0 18px rgba(250,204,21,0.9);
+        }
+        .station-label {
+            position: absolute;
+            color: #e6400e;
+            transform: translate(-50%, 13px);
+            font-size: 11px;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            pointer-events: none;
+            white-space: nowrap;
+            text-shadow: 0 0 6px rgba(250, 204, 21, 0), 0 1px 2px #000;
+        }
+
+        /* ── TRAINS ── */
+        .train {
+            position: absolute;
+            padding: 2px 7px;
+            background: var(--train-local);
+            color: #000;
+            font-size: 9px;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            letter-spacing: 1px;
+            transform: translate(-50%, -50%);
+            border-radius: 2px;
+            z-index: 20;
+            transition: left 0.4s linear, top 0.4s linear;
+            pointer-events: none;
+            box-shadow: 0 0 12px var(--train-local);
+            white-space: nowrap;
+        }
+        .train.Express { background: var(--train-express); box-shadow: 0 0 14px var(--train-express); }
+        .train.Freight  { background: var(--train-freight); color: #fff; box-shadow: 0 0 14px var(--train-freight); }
+
+        /* ══════════════════════ RIGHT PANEL ══════════════════════ */
+        #telemetry-panel {
+            position: absolute;
+            right: 0; top: var(--header-h);
+            width: var(--panel-w);
+            height: calc(100vh - var(--header-h));
+            background: var(--bg-panel);
+            border-left: 2px solid var(--border-mid);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.7);
+        }
+
+        .panel-section-hdr {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 7px 12px;
+            font-family: var(--font-ui);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .panel-section-hdr::before {
+            content: '';
+            width: 3px; height: 14px;
+            background: var(--text-accent);
+            border-radius: 2px;
+        }
+
+        #schedule-board {
+            height: 130px;
+            border-bottom: 1px solid var(--border-dim);
+            overflow-y: auto;
+            background: var(--bg-surface);
+            padding: 8px 10px;
+            font-size: 10.5px;
+            color: var(--text-accent);
+            flex-shrink: 0;
+        }
+        #schedule-board::-webkit-scrollbar { width: 4px; }
+        #schedule-board::-webkit-scrollbar-track { background: transparent; }
+        #schedule-board::-webkit-scrollbar-thumb { background: var(--border-mid); }
+
+        .sched-entry {
+            padding: 5px 6px;
+            border-left: 2px solid var(--border-accent);
+            margin-bottom: 5px;
+            background: rgba(37,99,168,0.1);
+            border-radius: 0 3px 3px 0;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        #event-log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 10px;
+            font-size: 10px;
+            font-family: var(--font-mono);
+            background: var(--bg-void);
+        }
+        #event-log::-webkit-scrollbar { width: 4px; }
+        #event-log::-webkit-scrollbar-track { background: transparent; }
+        #event-log::-webkit-scrollbar-thumb { background: var(--border-dim); }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(26,45,74,0.5);
+            line-height: 1.4;
+        }
+
+        /* mini stats bar */
+        #mini-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border-dim);
+            border-top: 1px solid var(--border-dim);
+            flex-shrink: 0;
+        }
+        .stat-cell {
+            background: var(--bg-card);
+            padding: 8px;
+            text-align: center;
+        }
+        .stat-val { font-size: 20px; font-weight: bold; font-family: var(--font-mono); color: var(--text-accent); }
+        .stat-lbl { font-size: 9px; color: var(--text-dim); font-family: var(--font-ui); letter-spacing: 1px; margin-top: 2px; }
+
+        /* ══════════════════════ QUICK CONTROLS ══════════════════════ */
+        #quick-controls {
+            position: absolute;
+            bottom: 20px; left: 16px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 240px;
+        }
+
+        .ctrl-row {
+            display: flex;
+            gap: 6px;
+            align-items: stretch;
+        }
+
+        .ctrl-btn {
+            font-family: var(--font-ui);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border: none;
+            padding: 9px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-radius: 3px;
+            flex: 1;
+        }
+        .ctrl-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+        .ctrl-btn:active { transform: translateY(0); filter: brightness(0.9); }
+
+        .btn-start  { background: #166534; color: #86efac; border: 1px solid #22c55e; }
+        .btn-start:hover { background: #15803d; }
+        .btn-build  { background: #78350f; color: #fcd34d; border: 1px solid #f59e0b; }
+        .btn-build:hover { background: #92400e; }
+        .btn-estop  { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+        .btn-estop-active { background: #facc15; color: #000; border: 1px solid #fbbf24; }
+        .btn-estop:hover { background: #991b1b; }
+
+        .time-input {
+            background: #000;
+            border: 1px solid var(--border-mid);
+            color: var(--text-warn);
+            padding: 8px 10px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            border-radius: 3px;
+            width: 110px;
+            letter-spacing: 2px;
+        }
+        .time-input:focus { outline: none; border-color: var(--text-accent); }
+        .btn-settime {
+            background: var(--border-accent);
+            color: var(--text-primary);
+            border: none;
+            padding: 8px 12px;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 3px;
+            flex: 1;
+            transition: all 0.15s;
+        }
+        .btn-settime:hover { background: #3b82f6; }
+
+        /* ══════════════════════ MODALS ══════════════════════ */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-mid);
+            border-top: 3px solid var(--text-accent);
+            border-radius: 6px;
+            padding: 24px;
+            width: 340px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(56,189,248,0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .modal-title {
+            font-family: var(--font-ui);
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-warn);
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 10px;
+        }
+        .modal-input {
+            background: var(--bg-void);
+            border: 1px solid var(--border-mid);
+            color: #0f0;
+            padding: 10px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            border-radius: 3px;
+            transition: border-color 0.15s;
+        }
+        .modal-input:focus { outline: none; border-color: var(--text-accent); }
+        .modal-btn {
+            background: var(--border-accent);
+            color: #fff;
+            border: none;
+            padding: 11px;
+            font-family: var(--font-ui);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+            transition: all 0.15s;
+        }
+        .modal-btn:hover { background: #3b82f6; }
+        .modal-btn.cancel { background: #334155; margin-top: -4px; }
+        .modal-btn.cancel:hover { background: #475569; }
+        .modal-btn.go { background: #166534; }
+        .modal-btn.go:hover { background: #15803d; }
+
+        /* ══════════════════════ E-STOP OVERLAY ══════════════════════ */
+        #estop-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(239,68,68,0.12);
+            pointer-events: none;
+            z-index: 998;
+            animation: estop-flash 0.8s infinite;
+        }
+        @keyframes estop-flash {
+            0%,100% { opacity: 0; }
+            50%      { opacity: 1; }
+        }
+        /* red frame */
+        #estop-overlay::before {
+            content: 'EMERGENCY STOP ACTIVE';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-ui);
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: rgba(239,68,68,0.2);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div id="header">
+    <div class="hdr-left">
+        <div class="hdr-logo">🚆</div>
+        <div>
+            <div class="hdr-title">SANRAKSHAN &mdash; CTC Interlocking Panel</div>
+            <div class="hdr-sub">CENTRALIZED TRAFFIC CONTROL · PREDICTIVE RAILWAY SIMULATION ENGINE</div>
+        </div>
+    </div>
+
+    <div id="sim-clock">CLOCK: 00:00 (PAUSED)</div>
+
+    <div class="hdr-right">
+        <div class="legend-strip">
+            <div class="leg-item"><div class="leg-dot" style="background:#2a4a72"></div>IDLE</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#c0392b"></div>LOCKED</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#f39c12"></div>FAULT</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#e67e22;transform:rotate(45deg)"></div>XOVER</div>
+        </div>
+        <div id="status">SYS.OFFLINE</div>
+    </div>
+</div>
+
+<!-- ══ MAP ══ -->
+<div id="map-container"></div>
+
+<!-- ══ QUICK CONTROLS ══ -->
+<div id="quick-controls">
+    <div class="ctrl-row">
+        <input type="time" id="manual-time" value="22:40" class="time-input">
+        <button class="btn-settime" onclick="setManualTime()">SET CLOCK</button>
+    </div>
+    <button class="ctrl-btn btn-start" onclick="startSimulation()">▶ START SIMULATION</button>
+    <button class="ctrl-btn btn-build" onclick="loadDemoMap()">⬛ AUTO-BUILD YARD</button>
+    <button id="estop-btn" class="ctrl-btn btn-estop" onclick="toggleEStop()">⚠ EMERGENCY STOP</button>
+</div>
+
+<!-- ══ BUILD MODAL ══ -->
+<div id="build-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">Construct New Node</div>
+        <input type="text" id="new-station-id" class="modal-input" placeholder="Station ID (e.g., PUNE)">
+        <button class="modal-btn go" onclick="submitStation()">BUILD STATION</button>
+        <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
+    </div>
+</div>
+
+<!-- ══ DISPATCH MODAL ══ -->
+<div id="dispatch-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">Central Dispatch</div>
+        <input type="text" id="disp-src" class="modal-input" readonly style="color:#5a8ab0;">
+        <input type="text" id="disp-tgt" class="modal-input" placeholder="Destination ID (e.g., E_YARD)">
+        <input type="time" id="disp-time" class="modal-input" value="22:50" required>
+        <input type="text" id="disp-name" class="modal-input" placeholder="Train Call-Sign (e.g., T-Alpha)">
+        <select id="disp-type" class="modal-input">
+            <option value="Express">Express — Priority 1 (Fast)</option>
+            <option value="Local">Local — Priority 2 (Medium)</option>
+            <option value="Freight">Freight — Priority 3 (Slow)</option>
+        </select>
+        <button class="modal-btn go" onclick="submitDispatch()">✔ AUTHORIZE LAUNCH</button>
+        <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
+    </div>
+</div>
+
+<!-- ══ RIGHT PANEL ══ -->
+<div id="telemetry-panel">
+    <div class="panel-section-hdr">INTERLOCK TELEMETRY</div>
+
+    <div class="panel-section-hdr" style="font-size:10px;">PENDING DEPARTURES</div>
+    <div id="schedule-board"></div>
+
+    <div class="panel-section-hdr" style="font-size:10px;">EVENT LOG</div>
+    <div id="event-log"></div>
+
+    <div id="mini-stats">
+        <div class="stat-cell">
+            <div class="stat-val" id="stat-trains">0</div>
+            <div class="stat-lbl">ACTIVE TRAINS</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-val" id="stat-locked">0</div>
+            <div class="stat-lbl">LOCKED TRACKS</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ E-STOP OVERLAY ══ -->
+<div id="estop-overlay"></div>
+
+<script src="app.js"></script>
 </body>
 </html>
