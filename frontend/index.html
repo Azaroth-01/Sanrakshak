@@ -739,7 +739,10 @@
         <input type="time" id="manual-time" value="22:40" class="time-input">
         <button class="btn-settime" onclick="setManualTime()">SET CLOCK</button>
     </div>
-    <button class="ctrl-btn btn-start" onclick="startSimulation()">▶ START SIMULATION</button>
+    <div style="display: flex; gap: 8px;">
+        <button id="btn-toggle" class="ctrl-btn btn-start" onclick="toggleSimulation()">▶ START SIMULATION</button>
+        <button class="ctrl-btn" style="background: #334155; color: #cbd5e1; border: 1px solid #475569;" onclick="resetSimulation()">🔄 RESET</button>
+    </div>
     <button class="ctrl-btn btn-build" onclick="loadDemoMap()">⬛ AUTO-BUILD YARD</button>
     <button id="estop-btn" class="ctrl-btn btn-estop" onclick="toggleEStop()">⚠ EMERGENCY STOP</button>
 </div>
@@ -768,6 +771,25 @@
             <option value="Freight">Freight — Priority 3 (Slow)</option>
         </select>
         <button class="modal-btn go" onclick="submitDispatch()">✔ AUTHORIZE LAUNCH</button>
+        <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
+    </div>
+</div>
+
+<div id="track-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">Engineering: Lay Track</div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="trk-src" class="modal-input" readonly style="color:#5a8ab0; flex: 1;">
+            <span style="color: var(--text-dim); align-self: center;">&rarr;</span>
+            <input type="text" id="trk-tgt" class="modal-input" readonly style="color:#5a8ab0; flex: 1;">
+        </div>
+        <input type="number" id="trk-len" class="modal-input" placeholder="Length (km)">
+        <select id="trk-mode" class="modal-input">
+            <option value="DOUBLE">Double Track (Two-Way)</option>
+            <option value="SINGLE_UP">Single Track (Forward Only)</option>
+            <option value="SINGLE_DN">Single Track (Reverse Only)</option>
+        </select>
+        <button class="modal-btn go" onclick="submitTrack()">🛠 LAY TRACK</button>
         <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
     </div>
 </div>

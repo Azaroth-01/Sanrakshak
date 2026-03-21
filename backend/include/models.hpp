@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <atomic>
 
 struct TrackSegment {
     std::string id;
@@ -34,7 +35,8 @@ struct Train {
     
     int scheduled_time_mins; 
     bool has_departed;
+    std::atomic<bool> is_aborted; // NEW: Safely kills the thread on Reset
 
     Train(std::string i, std::string t, int p, std::vector<std::string> r, int st_mins) 
-        : id(i), type(t), priority(p), current_speed(0), current_location(r.front()), route(r), scheduled_time_mins(st_mins), has_departed(false) {}
+        : id(i), type(t), priority(p), current_speed(0), current_location(r.front()), route(r), scheduled_time_mins(st_mins), has_departed(false), is_aborted(false) {}
 };

@@ -385,58 +385,45 @@ function updateState(data) {
 //  Parallel-track SCADA renderer with crossovers & signals
 // ═══════════════════════════════════════════════════════
 
+// PRE-LOAD THE YARD COORDINATES (Unified Junctions!)
 let nodeCoords = {
-    // Western Line
-    "W_ANDHERI":      { x: 350, y: 540 },
-    "W_DADAR":        { x: 500, y: 520 },
-    "W_CHURCHGATE":   { x: 650, y: 500 },
+    // Western Line Hubs
+    "ANDHERI":      { x: 350, y: 500 },
+    "CHURCHGATE":   { x: 650, y: 500 },
 
-    // Central Line
-    "C_KASARA":       { x: 50,  y: 300 },
-    "C_KALYAN":       { x: 200, y: 320 },
-    "C_THANE":        { x: 300, y: 340 },
-    "C_DADAR":        { x: 500, y: 360 },
-    "C_CST":          { x: 650, y: 380 },
+    // Central Line Hubs
+    "KASARA":       { x: 50,  y: 300 },
+    "KALYAN":       { x: 200, y: 320 }, // Junction
+    "THANE":        { x: 300, y: 340 }, // Junction
+    "DADAR":        { x: 500, y: 440 }, // Mega Junction (Central + Western)
+    "CST":          { x: 650, y: 380 }, // Mega Terminal (Central + Harbour)
 
-    // Harbour Line
-    "H_PANVEL":       { x: 300, y:  50 },
-    "H_VASHI":        { x: 400, y: 100 },
-    "H_KURLA":        { x: 520, y: 200 },
-    "H_CST":          { x: 650, y: 380 },
-
-    // Trans-Harbour
-    "T_THANE":        { x: 300, y: 340 },
-    "T_NERUL":        { x: 420, y: 180 },
-    "T_PANVEL":       { x: 300, y:  50 },
-
-    // Karjat / Khopoli Branch
-    "B_KARJAT":       { x: 150, y: 200 },
-    "B_KHOPOLI":      { x: 220, y: 120 },
+    // Harbour / Trans-Harbour Hubs
+    "PANVEL":       { x: 300, y:  50 }, // Junction
+    "VASHI":        { x: 400, y: 100 },
+    "KURLA":        { x: 520, y: 200 }, // Junction
+    "NERUL":        { x: 420, y: 150 },
 
     // Extended Mainline (Mumbai–Pune)
-    "M_KARJAT":       { x: 800, y: 360 },
-    "M_LONAVALA":     { x: 900, y: 300 },
-    "M_TALEGAON":     { x: 980, y: 260 },
-    "M_SHIVAJINAGAR": { x:1060, y: 230 },
-    "M_PUNE":         { x:1150, y: 200 },
-
-    // Junctions (shared with Central/Trans/Harbour)
-    "J_KALYAN":       { x: 200, y: 320 },
-    "J_THANE":        { x: 300, y: 340 },
-    "J_KURLA":        { x: 520, y: 200 },
-    "J_DADAR":        { x: 500, y: 360 }
+    "KARJAT":       { x: 800, y: 360 }, // Junction
+    "KHOPOLI":      { x: 850, y: 450 }, // Branch end
+    "LONAVALA":     { x: 900, y: 300 },
+    "TALEGAON":     { x: 980, y: 260 },
+    "SHIVAJINAGAR": { x:1060, y: 230 },
+    "PUNE":         { x:1150, y: 200 }
 };
 
 // Tracks that should show a crossover diamond (track-changing point)
 // Specify the mid-point fraction (0–1) along the track where the crossover sits
+// Tracks that should show a crossover diamond
 const CROSSOVER_TRACKS = new Set([
-    "C_KALYAN|C_THANE",
-    "C_THANE|C_DADAR",
-    "C_DADAR|C_CST",
-    "M_KARJAT|M_LONAVALA",
-    "M_LONAVALA|M_TALEGAON",
-    "H_VASHI|H_KURLA",
-    "W_DADAR|W_CHURCHGATE"
+    "KALYAN|THANE",
+    "THANE|DADAR",
+    "DADAR|CST",
+    "KARJAT|LONAVALA",
+    "LONAVALA|TALEGAON",
+    "VASHI|KURLA",
+    "ANDHERI|DADAR"
 ]);
 
 const activeTrains   = {};
@@ -489,9 +476,16 @@ function setManualTime() {
     logEvent(`Clock set → ${v}`, 'var(--text-warn)');
 }
 
-function startSimulation() {
-    ws.send(JSON.stringify({ action: 'START_SIMULATION' }));
-    logEvent('MASTER CLOCK ACTIVATED (1 SEC = 1 MIN)', 'var(--text-ok)');
+function toggleSimulation() {
+    ws.send(JSON.stringify({ action: 'TOGGLE_SIMULATION' }));
+}
+
+function resetSimulation() {
+    if(confirm("⚠ WARNING: This will wipe all trains and reset the clock. Proceed?")) {
+        ws.send(JSON.stringify({ action: 'RESET_SIMULATION' }));
+        document.getElementById('schedule-board').innerHTML = ''; // Clear the board visually
+        logEvent("SYSTEM RESET EXECUTED.", "#ff4444");
+    }
 }
 
 // ── Demo yard builder ─────────────────────────────────────
@@ -504,37 +498,29 @@ function loadDemoMap() {
     setTimeout(() => {
         const tracks = [
             // Western Line
-            ["W_ANDHERI", "W_DADAR"],
-            ["W_DADAR",   "W_CHURCHGATE"],
+            ["ANDHERI", "DADAR"],
+            ["DADAR",   "CHURCHGATE"],
             // Central Line
-            ["C_KASARA",  "C_KALYAN"],
-            ["C_KALYAN",  "C_THANE"],
-            ["C_THANE",   "C_DADAR"],
-            ["C_DADAR",   "C_CST"],
+            ["KASARA",  "KALYAN"],
+            ["KALYAN",  "THANE"],
+            ["THANE",   "DADAR"],
+            ["DADAR",   "CST"],
             // Harbour Line
-            ["H_PANVEL",  "H_VASHI"],
-            ["H_VASHI",   "H_KURLA"],
-            ["H_KURLA",   "H_CST"],
+            ["PANVEL",  "VASHI"],
+            ["VASHI",   "KURLA"],
+            ["KURLA",   "CST"],
             // Trans-Harbour
-            ["T_THANE",   "T_NERUL"],
-            ["T_NERUL",   "T_PANVEL"],
-            // Karjat / Khopoli Branch
-            ["C_KALYAN",  "B_KARJAT"],
-            ["B_KARJAT",  "B_KHOPOLI"],
-            // Mumbai → Pune
-            ["C_KALYAN",  "M_KARJAT"],
-            ["M_KARJAT",  "M_LONAVALA"],
-            ["M_LONAVALA","M_TALEGAON"],
-            ["M_TALEGAON","M_SHIVAJINAGAR"],
-            ["M_SHIVAJINAGAR","M_PUNE"],
-            // Interconnections
-            ["C_THANE",   "T_THANE"],
-            ["H_KURLA",   "J_KURLA"],
-            ["J_KURLA",   "C_DADAR"],
-            ["W_DADAR",   "J_DADAR"],
-            ["J_DADAR",   "C_DADAR"],
-            ["H_CST",     "C_CST"]
+            ["THANE",   "NERUL"],
+            ["NERUL",   "PANVEL"],
+            // Karjat Branch & Mainline to Pune
+            ["KALYAN",  "KARJAT"],
+            ["KARJAT",  "KHOPOLI"],
+            ["KARJAT",  "LONAVALA"],
+            ["LONAVALA","TALEGAON"],
+            ["TALEGAON","SHIVAJINAGAR"],
+            ["SHIVAJINAGAR","PUNE"]
         ];
+        
         tracks.forEach(t => {
             const dx  = nodeCoords[t[1]].x - nodeCoords[t[0]].x;
             const dy  = nodeCoords[t[1]].y - nodeCoords[t[0]].y;
@@ -551,9 +537,9 @@ let tempX = 0, tempY = 0;
 function closeModals() {
     document.getElementById('build-modal').style.display    = 'none';
     document.getElementById('dispatch-modal').style.display = 'none';
+    document.getElementById('track-modal').style.display    = 'none'; // NEW
     document.getElementById('new-station-id').value = '';
 }
-
 mapContainer.addEventListener('click', (e) => {
     if (e.target !== mapContainer) return;
     tempX = e.clientX;
@@ -593,6 +579,17 @@ function submitDispatch() {
     board.appendChild(entry);
 
     logEvent(`[${name}] Queued @ ${tv}.`, 'var(--text-accent)');
+}
+
+function submitTrack() {
+    const src = document.getElementById('trk-src').value;
+    const tgt = document.getElementById('trk-tgt').value;
+    const len = parseInt(document.getElementById('trk-len').value) || 50;
+    const mode = document.getElementById('trk-mode').value;
+
+    ws.send(JSON.stringify({ action: 'ADD_TRACK', src: src, tgt: tgt, length: len, mode: mode }));
+    closeModals();
+    logEvent(`Laying ${mode} track from ${src} to ${tgt}...`, "#38bdf8");
 }
 
 // ── E-Stop ────────────────────────────────────────────────
@@ -737,44 +734,47 @@ function makeCrossover(src, tgt) {
 // ═══════════════════════════════════════════════════════
 function buildMap(stations, tracks) {
     if (!mapContainer) return;
-    // clear old elements
-    document.querySelectorAll(
-        '.track-up, .track-dn, .station, .scada-signal, .crossover, .track-arrow'
-    ).forEach(el => el.remove());
+    document.querySelectorAll('.track-up, .track-dn, .station, .scada-signal, .crossover, .track-arrow, .yard-spur').forEach(el => el.remove());
 
-    const GAP = 10;   // pixels between up and dn rails — enough to be clearly separate
+    const GAP = 10; 
+    const processedEdges = new Set(); // Prevents drawing 4 rails for a double track
 
     tracks.forEach(track => {
+        // Group tracks regardless of direction
+        const edgeKey = track.src < track.tgt ? `${track.src}|${track.tgt}` : `${track.tgt}|${track.src}`;
+        if (processedEdges.has(edgeKey)) return; 
+        processedEdges.add(edgeKey);
+
         const src = nodeCoords[track.src];
         const tgt = nodeCoords[track.tgt];
         if (!src || !tgt) return;
 
-        // remember canonical direction for per-rail locking
-        trackMeta[track.id] = { src: track.src, tgt: track.tgt };
+        // Check which directions ACTUALLY exist in the backend
+        const hasUp = tracks.some(t => t.src === track.src && t.tgt === track.tgt);
+        const hasDn = tracks.some(t => t.src === track.tgt && t.tgt === track.src);
 
         const dx = tgt.x - src.x, dy = tgt.y - src.y;
         const { px, py } = perpOffset(dx, dy, GAP);
 
-        // ── UP rail (offset +perp) ──
-        const upEl = makeRail('track-up', src, tgt,  px,  py, track.id, track.is_broken);
-        // ── DN rail (offset -perp) ──
-        const dnEl = makeRail('track-dn', src, tgt, -px, -py, track.id, track.is_broken);
+        if (hasUp) {
+            trackMeta[`${track.src}-${track.tgt}`] = { src: track.src, tgt: track.tgt };
+            const upEl = makeRail('track-up', src, tgt, px, py, `${track.src}-${track.tgt}`, track.is_broken);
+            makeArrow(src, tgt, px, py, true);
+            const sigUp = makeSignal(src.x + px, src.y + py, tgt.x + px, tgt.y + py, `${track.src}-${track.tgt}`, 'sig-up');
+            activeTracks[`${track.src}-${track.tgt}`] = { up: upEl };
+            activeSignals[`${track.src}-${track.tgt}`] = { up: sigUp };
+        }
+        
+        if (hasDn) {
+            trackMeta[`${track.tgt}-${track.src}`] = { src: track.tgt, tgt: track.src };
+            const dnEl = makeRail('track-dn', src, tgt, -px, -py, `${track.tgt}-${track.src}`, track.is_broken);
+            makeArrow(src, tgt, -px, -py, false);
+            const sigDn = makeSignal(tgt.x - px, tgt.y - py, src.x - px, src.y - py, `${track.tgt}-${track.src}`, 'sig-dn');
+            activeTracks[`${track.tgt}-${track.src}`] = { dn: dnEl };
+            activeSignals[`${track.tgt}-${track.src}`] = { dn: sigDn };
+        }
 
-        activeTracks[track.id] = { up: upEl, dn: dnEl };
-
-        // ── Direction arrows ──
-        makeArrow(src, tgt,  px,  py, true);    // up rail → toward tgt
-        makeArrow(src, tgt, -px, -py, false);   // dn rail → toward src
-
-        // ── Signals: one per rail, near the source end ──
-        const sigUp = makeSignal(src.x + px, src.y + py, tgt.x + px, tgt.y + py, track.id, 'sig-up');
-        const sigDn = makeSignal(tgt.x - px, tgt.y - py, src.x - px, src.y - py, track.id, 'sig-dn');
-        activeSignals[track.id] = { up: sigUp, dn: sigDn };
-
-        // ── Crossover diamond ──
-        const key1 = `${track.src}|${track.tgt}`;
-        const key2 = `${track.tgt}|${track.src}`;
-        if (CROSSOVER_TRACKS.has(key1) || CROSSOVER_TRACKS.has(key2)) {
+        if (hasUp && hasDn && (CROSSOVER_TRACKS.has(edgeKey) || CROSSOVER_TRACKS.has(`${track.tgt}|${track.src}`))) {
             makeCrossover(src, tgt);
         }
     });
@@ -800,8 +800,7 @@ function buildMap(stations, tracks) {
         el.style.left  = `${coords.x}px`;
         el.style.top   = `${coords.y}px`;
         el.innerHTML   = `<div class="station-label">${station.id}</div>`;
-
-        el.addEventListener('click', (e) => {
+el.addEventListener('click', (e) => {
             e.stopPropagation();
             if (e.shiftKey) {
                 if (!selectedStationId) {
@@ -810,13 +809,19 @@ function buildMap(stations, tracks) {
                     el.style.boxShadow   = '0 0 12px #00ff00';
                 } else {
                     if (selectedStationId !== station.id) {
-                        ws.send(JSON.stringify({ action: 'ADD_TRACK', src: selectedStationId, tgt: station.id, length: 10 }));
+                        // NEW: Open Track Modal instead of sending WS instantly
+                        document.getElementById('trk-src').value = selectedStationId;
+                        document.getElementById('trk-tgt').value = station.id;
+                        
+                        // Auto-calculate visual distance for the default length
+                        const dx = nodeCoords[station.id].x - nodeCoords[selectedStationId].x;
+                        const dy = nodeCoords[station.id].y - nodeCoords[selectedStationId].y;
+                        document.getElementById('trk-len').value = Math.floor(Math.hypot(dx, dy) / 2);
+                        
+                        document.getElementById('track-modal').style.display = 'flex';
                     }
                     selectedStationId = null;
-                    document.querySelectorAll('.station').forEach(s => {
-                        s.style.borderColor = '';
-                        s.style.boxShadow   = '';
-                    });
+                    document.querySelectorAll('.station').forEach(s => { s.style.borderColor = ''; s.style.boxShadow = ''; });
                 }
             } else {
                 document.getElementById('disp-src').value = station.id;
@@ -832,9 +837,15 @@ function buildMap(stations, tracks) {
 // ═══════════════════════════════════════════════════════
 //  updateState — called every tick from STATE_UPDATE msg
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+//  updateState — Upgraded Visual Glide & Crash Protection
+// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+//  updateState — Trusting the C++ Mutex Locks
+// ═══════════════════════════════════════════════════════
 function updateState(data) {
 
-    // 1. Clock
+    // 1. Clock & UI State
     if (data.sim_active !== undefined) {
         const clockEl   = document.getElementById('sim-clock');
         const totalMins = data.sim_time;
@@ -843,11 +854,22 @@ function updateState(data) {
         const hrS = hr.toString().padStart(2, '0');
         const mnS = mn.toString().padStart(2, '0');
         const running = data.sim_active;
-        clockEl.innerText       = `CLOCK: ${hrS}:${mnS} ${running ? '(RUNNING)' : '(PAUSED)'}`;
-        clockEl.style.color      = running ? 'var(--text-ok)'   : 'var(--text-warn)';
-        clockEl.style.borderColor= running ? 'var(--text-ok)'   : 'var(--text-warn)';
 
-        // Remove dispatched trains from schedule board
+        const btnToggle = document.getElementById('btn-toggle');
+        if (running) {
+            btnToggle.innerText = '⏸ PAUSE SIMULATION';
+            btnToggle.style.background = '#b45309'; 
+            btnToggle.style.borderColor = '#f59e0b';
+        } else {
+            btnToggle.innerText = '▶ START SIMULATION';
+            btnToggle.style.background = '#166534'; 
+            btnToggle.style.borderColor = '#22c55e';
+        }
+        
+        clockEl.innerText = `CLOCK: ${hrS}:${mnS} ${running ? '(RUNNING)' : '(PAUSED)'}`;
+        clockEl.style.color = running ? 'var(--text-ok)' : 'var(--text-warn)';
+        clockEl.style.borderColor = running ? 'var(--text-ok)' : 'var(--text-warn)';
+
         if (data.trains) {
             data.trains.forEach(t => {
                 const schedItem = document.getElementById(`sched-${t.id}`);
@@ -856,76 +878,55 @@ function updateState(data) {
         }
     }
 
-    // 2. Derive per-rail occupancy from live train positions
-    //    The server gives us locked_tracks (segment IDs occupied by any train)
-    //    AND trains[].loc which encodes the segment being traversed as "SRC-TGT".
-    //    UP rail = train travelling src→tgt (canonical direction)
-    //    DN rail = train travelling tgt→src (reverse)
-    const upLockedSet = new Set();   // trackIds where UP rail is occupied
-    const dnLockedSet = new Set();   // trackIds where DN rail is occupied
+    // 2. Track Coloring (BUG 1 FIX: Strictly read C++ Mutex Locks!)
+    const lockedSet = new Set(data.locked_tracks || []);
+    let lockedCount = 0;
 
-    if (data.trains) {
-        data.trains.forEach(t => {
-            if (t.loc && t.loc.includes('-')) {
-                const [from, to] = t.loc.split('-');
-                // Find which track this segment belongs to
-                for (const [tid, meta] of Object.entries(trackMeta)) {
-                    if (meta.src === from && meta.tgt === to) {
-                        upLockedSet.add(tid);  // travelling in canonical direction → UP rail
-                    } else if (meta.src === to && meta.tgt === from) {
-                        dnLockedSet.add(tid);  // travelling in reverse → DN rail
-                    }
+    for (const trackId in activeTracks) {
+        const pair = activeTracks[trackId];
+        const sigPair = activeSignals[trackId];
+        const isLocked = lockedSet.has(trackId); // Checks if THIS EXACT direction is locked
+
+        if (isLocked) lockedCount++;
+
+        if (pair.up) {
+            if (isLocked) {
+                if (!pair.up.classList.contains('locked')) {
+                    pair.up.classList.add('locked');
+                    if (sigPair && sigPair.up) sigPair.up.classList.replace('clear', 'danger');
+                }
+            } else {
+                if (pair.up.classList.contains('locked')) {
+                    pair.up.classList.remove('locked');
+                    if (sigPair && sigPair.up) sigPair.up.classList.replace('danger', 'clear');
                 }
             }
-        });
-    }
-
-    let lockedCount = 0;
-    for (const trackId in activeTracks) {
-        const pair    = activeTracks[trackId];
-        const sigPair = activeSignals[trackId];
-        const upLocked = upLockedSet.has(trackId);
-        const dnLocked = dnLockedSet.has(trackId);
-
-        // ── UP rail ──
-        if (upLocked) {
-            lockedCount++;
-            if (!pair.up.classList.contains('locked')) {
-                pair.up.classList.add('locked');
-                if (sigPair) sigPair.up.classList.replace('clear', 'danger');
-                logEvent(`TC_${trackId} UP OCCUPIED.`, 'var(--text-danger)');
-            }
-        } else {
-            if (pair.up.classList.contains('locked')) {
-                pair.up.classList.remove('locked');
-                if (sigPair) sigPair.up.classList.replace('danger', 'clear');
-                logEvent(`TC_${trackId} UP CLEAR.`, 'var(--text-ok)');
-            }
         }
 
-        // ── DN rail ──
-        if (dnLocked) {
-            lockedCount++;
-            if (!pair.dn.classList.contains('locked')) {
-                pair.dn.classList.add('locked');
-                if (sigPair) sigPair.dn.classList.replace('clear', 'danger');
-                logEvent(`TC_${trackId} DN OCCUPIED.`, 'var(--text-danger)');
-            }
-        } else {
-            if (pair.dn.classList.contains('locked')) {
-                pair.dn.classList.remove('locked');
-                if (sigPair) sigPair.dn.classList.replace('danger', 'clear');
-                logEvent(`TC_${trackId} DN CLEAR.`, 'var(--text-ok)');
+        if (pair.dn) {
+            if (isLocked) {
+                if (!pair.dn.classList.contains('locked')) {
+                    pair.dn.classList.add('locked');
+                    if (sigPair && sigPair.dn) sigPair.dn.classList.replace('clear', 'danger');
+                }
+            } else {
+                if (pair.dn.classList.contains('locked')) {
+                    pair.dn.classList.remove('locked');
+                    if (sigPair && sigPair.dn) sigPair.dn.classList.replace('danger', 'clear');
+                }
             }
         }
     }
 
-    // 3. Trains
+    // 3. Trains (BUG 2 FIX: Simplified Directional Math)
     const currentTrainIds = new Set();
     if (data.trains) {
         data.trains.forEach(t => {
             currentTrainIds.add(t.id);
             let targetX = 0, targetY = 0;
+            
+            // Match the UI glide speed to your C++ sleep physics
+            let speed = (t.type === 'Express') ? 7 : (t.type === 'Freight') ? 18 : 12;
 
             if (nodeCoords[t.loc]) {
                 targetX = nodeCoords[t.loc].x;
@@ -933,24 +934,45 @@ function updateState(data) {
             } else if (t.loc && t.loc.includes('-')) {
                 const [s, g] = t.loc.split('-');
                 if (nodeCoords[s] && nodeCoords[g]) {
-                    targetX = (nodeCoords[s].x + nodeCoords[g].x) / 2;
-                    targetY = (nodeCoords[s].y + nodeCoords[g].y) / 2;
+                    
+                    // Always calculate relative to the current direction of travel
+                    const dx = nodeCoords[g].x - nodeCoords[s].x;
+                    const dy = nodeCoords[g].y - nodeCoords[s].y;
+                    const { px, py } = perpOffset(dx, dy, 10); // Offset to the right-hand rail
+
+                    // SET TARGET TO THE DESTINATION STATION + RAIL OFFSET
+                    targetX = nodeCoords[g].x + px; 
+                    targetY = nodeCoords[g].y + py;
+
+                    // If the train just popped into existence, snap it to the STARTING station
+                    if (!activeTrains[t.id]) {
+                        const el = document.createElement('div');
+                        el.className = 'train ' + t.type;
+                        el.innerText = t.id;
+                        mapContainer.appendChild(el);
+                        activeTrains[t.id] = el;
+
+                        let startX = nodeCoords[s].x + px;
+                        let startY = nodeCoords[s].y + py;
+
+                        el.style.transition = 'none'; // Snap instantly
+                        el.style.left = `${startX}px`;
+                        el.style.top = `${startY}px`;
+                        el.getBoundingClientRect(); // Force browser reflow
+                    }
                 } else return;
             } else return;
 
-            if (!activeTrains[t.id]) {
-                const el = document.createElement('div');
-                el.className = 'train ' + t.type;
-                el.innerText = t.id;
-                mapContainer.appendChild(el);
-                activeTrains[t.id] = el;
+            // Apply the smooth CSS glide to the destination
+            if (activeTrains[t.id]) {
+                activeTrains[t.id].style.transition = `left ${speed}s linear, top ${speed}s linear`;
+                activeTrains[t.id].style.left = `${targetX}px`;
+                activeTrains[t.id].style.top  = `${targetY}px`;
             }
-            activeTrains[t.id].style.left = `${targetX}px`;
-            activeTrains[t.id].style.top  = `${targetY}px`;
         });
     }
 
-    // remove departed trains
+    // Clean up arrived/deleted trains
     for (const id in activeTrains) {
         if (!currentTrainIds.has(id)) {
             activeTrains[id].remove();
@@ -958,7 +980,7 @@ function updateState(data) {
         }
     }
 
-    // 4. Update mini stats
+    // Update Telemetry Panel
     const statTrains = document.getElementById('stat-trains');
     const statLocked = document.getElementById('stat-locked');
     if (statTrains) statTrains.innerText = currentTrainIds.size;

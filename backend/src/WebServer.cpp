@@ -54,8 +54,20 @@ namespace WebServer {
                         NetworkGraph::addStation(j["id"], j["name"]);
                     }
                     else if (action == "ADD_TRACK") {
-                        std::string track_id = j["src"].get<std::string>() + "-" + j["tgt"].get<std::string>();
-                        NetworkGraph::addTrack(track_id, j["src"], j["tgt"], j["length"], 100);
+                        std::string src = j["src"].get<std::string>();
+                        std::string tgt = j["tgt"].get<std::string>();
+                        int len = j["length"].get<int>();
+                        
+                        // Default to DOUBLE if mode is missing (for the Auto-Builder demo)
+                        std::string mode = j.contains("mode") ? j["mode"].get<std::string>() : "DOUBLE";
+                        
+                        if (mode == "DOUBLE" || mode == "SINGLE_UP") {
+                            NetworkGraph::addTrack(src + "-" + tgt, src, tgt, len, 100); // Forward Line
+                        }
+                        if (mode == "DOUBLE" || mode == "SINGLE_DN") {
+                            NetworkGraph::addTrack(tgt + "-" + src, tgt, src, len, 100); // Reverse Line
+                        }
+                        
                     }
                     else if (action == "DELETE_STATION") {
                         std::string st_id = j["id"].get<std::string>();
@@ -78,10 +90,13 @@ namespace WebServer {
                         std::cout << "[SERVER] Clock manually set to " << h << ":" << m << std::endl;
                         return; // Prevent full map re-render
                     }
-                    else if (action == "START_SIMULATION") {
-                        SimulationEngine::startSimulation();
-                        std::cout << "\n>>> SIMULATION MASTER CLOCK STARTED <<<\n";
-                        return; // Prevent full map re-render
+                    else if (action == "TOGGLE_SIMULATION") {
+                        SimulationEngine::toggleSimulation();
+                        return; 
+                    }
+                    else if (action == "RESET_SIMULATION") {
+                        SimulationEngine::resetSimulation();
+                        return; 
                     }
                     else if (action == "SMART_DISPATCH") {
                         std::string src = j["src"].get<std::string>();
@@ -93,16 +108,25 @@ namespace WebServer {
                         int sched_time_mins = (h * 60) + m; 
                         
                         std::vector<std::string> route = NetworkGraph::calculateShortestPath(src, tgt);
+                        
+                        // --- THE FIX: ROUTING ERROR CATCHER ---
                         if (route.size() >= 2) {
                             SimulationEngine::spawnTrain(name, type, 1, route, sched_time_mins);
-                            std::cout << "[SERVER] Queued " << type << " '" << name << "' for Min " << sched_time_mins << std::endl;
+                            std::cout << "[SERVER] Queued " << type << " '" << name << "' for Min " << sched_time_mins << " | Route: " << route.size() << " stops." << std::endl;
+                        } else {
+                            std::cout << "\n[CRITICAL ERROR] DISPATCH FAILED! No continuous track path exists from " << src << " to " << tgt << "!\n" << std::endl;
                         }
                         return;
                     }
                     else if (action == "SABOTAGE_TRACK") {
                         std::string track_id = j["id"].get<std::string>();
+                        std::string src = track_id.substr(0, track_id.find('-'));
+                        std::string tgt = track_id.substr(track_id.find('-') + 1);
+                        std::string rev_id = tgt + "-" + src;
+
                         std::lock_guard<std::mutex> graph_lock(NetworkGraph::graph_mutex);
-                        if (NetworkGraph::tracks.count(track_id)) { NetworkGraph::tracks[track_id]->is_broken = true; }
+                        if (NetworkGraph::tracks.count(track_id)) NetworkGraph::tracks[track_id]->is_broken = true;
+                        if (NetworkGraph::tracks.count(rev_id)) NetworkGraph::tracks[rev_id]->is_broken = true;
                         return;
                     }
                     else if (action == "E_STOP") {
@@ -137,7 +161,8 @@ namespace WebServer {
                 payload["locked_tracks"] = nlohmann::json::array(); 
                 
                 // --- CRITICAL CLOCK SYNC ---
-                payload["sim_active"] = SimulationEngine::simulation_started.load();
+               // --- CRITICAL CLOCK SYNC ---
+                payload["sim_active"] = !SimulationEngine::is_paused.load(); // Send TRUE if running!
                 payload["sim_time"] = SimulationEngine::sim_time_mins.load();
                 // ---------------------------
                 

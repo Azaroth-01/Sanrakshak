@@ -5,59 +5,80 @@
 #include <thread>
 
 namespace SimulationEngine {
-    std::atomic<bool> is_simulation_running(true);
     std::unordered_map<std::string, std::shared_ptr<Train>> active_trains;
     std::vector<std::thread> train_threads;
+    
     std::atomic<bool> global_estop(false);
-
-    std::atomic<bool> simulation_started(false);
+    std::atomic<bool> is_paused(true); 
+    std::atomic<bool> master_clock_running(false);
     std::atomic<int> sim_time_mins(0);
 
-    void startSimulation() {
-        if (simulation_started) return; 
-        simulation_started = true;
-        std::thread([]() {
-            while (simulation_started) {
-                while (global_estop) { std::this_thread::sleep_for(std::chrono::milliseconds(200)); } 
-                
-                // ACCELERATED CLOCK: 1 Real Second = 1 Sim Minute
-                std::this_thread::sleep_for(std::chrono::seconds(1)); 
-                sim_time_mins++; 
-                if (sim_time_mins >= 1440) sim_time_mins = 0; // Wrap around at Midnight!
-            }
-        }).detach();
+    void toggleSimulation() {
+        is_paused = !is_paused;
+        if (!master_clock_running) {
+            master_clock_running = true;
+            std::thread([]() {
+                while (true) {
+                    if (!is_paused && !global_estop) {
+                        std::this_thread::sleep_for(std::chrono::seconds(1));
+                        if (!is_paused) sim_time_mins++; 
+                        if (sim_time_mins >= 1440) sim_time_mins = 0; // Midnight loop
+                    } else {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                    }
+                }
+            }).detach();
+        }
+    }
+
+    void resetSimulation() {
+        is_paused = true;
+        // 1. Tell all trains to abort their missions
+        for (auto& pair : active_trains) { pair.second->is_aborted = true; }
+        
+        // 2. Wait exactly 300ms for threads to see the abort signal and drop their mutex locks!
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        
+        // 3. Safely wipe the board
+        std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+        active_trains.clear();
+        sim_time_mins = 0;
+        global_estop = false;
+        std::cout << "\n[SYSTEM] === NUCLEAR RESET COMPLETE ===\n";
     }
 
     void trainThreadFunction(std::shared_ptr<Train> train) {
-        std::cout << "[ENGINE] Train " << train->id << " STANDBY for Min: " << train->scheduled_time_mins << std::endl;
-
-        while (!simulation_started || sim_time_mins < train->scheduled_time_mins) {
+        // Wait for scheduled time
+        while (is_paused || sim_time_mins < train->scheduled_time_mins) {
+            if (train->is_aborted) return; // Self-Destruct
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
         
-        train->has_departed = true; 
-        std::cout << "[ENGINE] Train " << train->id << " DEPARTED at Min: " << sim_time_mins << std::endl;
+        if (train->is_aborted) return;
+        std::cout << "\n[ENGINE] CLOCK HIT! Train " << train->id << " is now DEPARTING at Min " << sim_time_mins << "!\n";
+        train->has_departed = true;
 
         for (size_t i = 1; i < train->route.size(); ++i) {
-            while (global_estop) { std::this_thread::sleep_for(std::chrono::milliseconds(200)); }
+            while (is_paused || global_estop) { 
+                if (train->is_aborted) return;
+                std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+            }
+            if (train->is_aborted) return;
 
-            std::string next_station = train->route[i];
-            std::string t_id1 = train->current_location + "-" + next_station;
-            std::string t_id2 = next_station + "-" + train->current_location;
+           std::string next_station = train->route[i];
+            
+            // STRICT DIRECTIONAL TRACKING
+            std::string track_id = train->current_location + "-" + next_station;
+            
             bool track_broken = false;
             {
                 std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
-                if (NetworkGraph::tracks.count(t_id1) && NetworkGraph::tracks[t_id1]->is_broken) track_broken = true;
-                if (NetworkGraph::tracks.count(t_id2) && NetworkGraph::tracks[t_id2]->is_broken) track_broken = true;
+                if (NetworkGraph::tracks.count(track_id) && NetworkGraph::tracks[track_id]->is_broken) track_broken = true;
             }
 
             if (track_broken) {
-                std::cout << "[ALARM] Train " << train->id << " detected broken track! Detouring...\n";
                 std::vector<std::string> new_route = NetworkGraph::calculateShortestPath(train->current_location, train->route.back());
-                if (new_route.size() < 2) {
-                    std::cout << "[ALARM] Train " << train->id << " is STRANDED.\n";
-                    break; 
-                }
+                if (new_route.size() < 2) break; 
                 train->route = new_route;
                 i = 0; 
                 continue; 
@@ -66,26 +87,39 @@ namespace SimulationEngine {
             std::shared_ptr<TrackSegment> target_track = nullptr;
             {
                 std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
-                if (NetworkGraph::tracks.count(t_id1)) target_track = NetworkGraph::tracks[t_id1];
-                else if (NetworkGraph::tracks.count(t_id2)) target_track = NetworkGraph::tracks[t_id2];
+                if (NetworkGraph::tracks.count(track_id)) target_track = NetworkGraph::tracks[track_id];
             }
 
             if (target_track) {
+                // LOCK THE SPECIFIC DIRECTIONAL TRACK
                 std::lock_guard<std::mutex> track_lock(target_track->segment_lock);
                 train->current_location = target_track->id;
                 
-                int speed_ms = 400; 
-                if (train->type == "Express") speed_ms = 150; 
-                else if (train->type == "Freight") speed_ms = 800; 
+                // --- NEW: ULTRA-SLOW DEMO SPEEDS ---
+                // Express = 7s, Local = 12s, Freight = 18s
+                int speed_ms = 12000; // Default to Local
+                if (train->type == "Express") speed_ms = 7000; 
+                else if (train->type == "Freight") speed_ms = 18000; 
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(speed_ms));
+                // Micro-sleep loop so trains can be aborted mid-movement
+                int elapsed = 0;
+                while (elapsed < speed_ms) {
+                    if (train->is_aborted) return; // Drops the lock automatically!
+                    while (is_paused || global_estop) {
+                        if (train->is_aborted) return;
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    elapsed += 50;
+                }
             }
             train->current_location = next_station;
         }
 
-        std::cout << "[ENGINE] Train " << train->id << " reached final destination." << std::endl;
-        std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
-        active_trains.erase(train->id);
+        if (!train->is_aborted) {
+            std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+            active_trains.erase(train->id);
+        }
     }
 
     void spawnTrain(std::string id, std::string type, int priority, std::vector<std::string> route, int sched_time_mins) {
