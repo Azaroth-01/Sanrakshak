@@ -254,21 +254,27 @@ namespace SimulationEngine {
                     }
                     
                     // Calculate normal speed
+                    // 1. Calculate normal speed based on train type
                     int current_target_speed = 12000;
                     if (train->type == "Express") current_target_speed = 7000; 
                     else if (train->type == "Freight") current_target_speed = 18000; 
 
-                    // If Dispatcher toggles wildlife WHILE train is mid-track, slam the brakes!
-                    if (target_track->has_animals) {
-                        current_target_speed = 45000; // Extreme Crawl (45 seconds!)
+                    // 2. Scan for Elephants!
+                    // --- THE TRUE MID-TRACK HALT ---
+                    while (target_track->has_animals) {
+                        if (train->is_aborted) return;
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        // The thread is now literally frozen here until the elephant leaves!
                     }
                     
-                    train->current_speed = current_target_speed / 1000; 
-
-                    if (elapsed >= current_target_speed) break; 
-
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                    elapsed += 50;
+                    // Look Ahead Brakes (Slightly slow down if NEXT track has animals)
+                    if (i + 1 < train->route.size()) {
+                        std::string next_track_id = train->route[i] + "-" + train->route[i+1];
+                        std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+                        if (NetworkGraph::tracks.count(next_track_id) && NetworkGraph::tracks[next_track_id]->has_animals) {
+                            current_target_speed *= 2; 
+                        }
+                    }
                 }
             }
             train->current_location = next_station;

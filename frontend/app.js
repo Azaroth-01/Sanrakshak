@@ -1033,7 +1033,7 @@ function buildMap(stations, tracks) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  updateState — Trusting the C++ Mutex Locks & Physics
+//  updateState — Master Version (Animals & Freeze)
 // ═══════════════════════════════════════════════════════
 function updateState(data) {
 
@@ -1070,7 +1070,6 @@ function updateState(data) {
         }
     }
 
-    // 2. Track Coloring & Wildlife Rendering
     // 2. Track Coloring & Wildlife Rendering
     const lockedSet = new Set(data.locked_tracks || []);
     const animalSet = new Set(data.animal_tracks || []); 
@@ -1121,7 +1120,7 @@ function updateState(data) {
         // Standard Lock Checking
         if (isLocked) lockedCount++;
 
-        // --- THE MISSING LOGIC: Color the tracks RED/GREEN! ---
+        // Color the tracks RED/GREEN
         if (pair.up) {
             if (isLocked) {
                 if (!pair.up.classList.contains('locked')) {
@@ -1149,31 +1148,35 @@ function updateState(data) {
                 }
             }
         }
-    } // <--- THIS IS THE BRACE THAT WAS MISSING!
+    }
 
-    // 3. Trains (With Dynamic Speed Matching)
+// 3. Trains (With Flawless Geometric Mid-Track Freezing & Time Resync)
     const currentTrainIds = new Set();
     if (data.trains) {
         data.trains.forEach(t => {
             currentTrainIds.add(t.id);
             let targetX = 0, targetY = 0;
-            
-            // Match the UI glide speed to your dynamic C++ physics
+            let startX = 0, startY = 0; // NEW: Track start points for math
             let speed = t.speed || ((t.type === 'Express') ? 7 : (t.type === 'Freight') ? 18 : 12);
 
             if (nodeCoords[t.loc]) {
                 targetX = nodeCoords[t.loc].x;
                 targetY = nodeCoords[t.loc].y;
+                startX = targetX; 
+                startY = targetY;
             } else if (t.loc && t.loc.includes('-')) {
                 const [s, g] = t.loc.split('-');
                 if (nodeCoords[s] && nodeCoords[g]) {
-                    
                     const dx = nodeCoords[g].x - nodeCoords[s].x;
                     const dy = nodeCoords[g].y - nodeCoords[s].y;
                     const { px, py } = perpOffset(dx, dy, 10); 
-
+                    
                     targetX = nodeCoords[g].x + px; 
                     targetY = nodeCoords[g].y + py;
+                    
+                    // Save the exact start coordinates of this specific rail
+                    startX = nodeCoords[s].x + px; 
+                    startY = nodeCoords[s].y + py;
 
                     if (!activeTrains[t.id]) {
                         const el = document.createElement('div');
@@ -1181,10 +1184,6 @@ function updateState(data) {
                         el.innerText = t.id;
                         mapContainer.appendChild(el);
                         activeTrains[t.id] = el;
-
-                        let startX = nodeCoords[s].x + px;
-                        let startY = nodeCoords[s].y + py;
-
                         el.style.transition = 'none'; 
                         el.style.left = `${startX}px`;
                         el.style.top = `${startY}px`;
@@ -1193,15 +1192,50 @@ function updateState(data) {
                 } else return;
             } else return;
 
-            // Apply the smooth CSS glide (Slows down automatically if passing an animal!)
             if (activeTrains[t.id]) {
-                activeTrains[t.id].style.transition = `left ${speed}s linear, top ${speed}s linear`;
-                activeTrains[t.id].style.left = `${targetX}px`;
-                activeTrains[t.id].style.top  = `${targetY}px`;
+                // --- THE MID-TRACK FREEZE ILLUSION ---
+                const isSystemPaused = (data.sim_active === false) || isEStopActive;
+                const reverseLoc = t.loc && t.loc.includes('-') ? t.loc.split('-').reverse().join('-') : '';
+                const isBlockedByElephant = animalSet.has(t.loc) || animalSet.has(reverseLoc);
+
+                if (isSystemPaused || isBlockedByElephant) {
+                    // Snatch live pixel geometry and anchor the train
+                    if (activeTrains[t.id].style.transition !== 'none') {
+                        const rect = activeTrains[t.id].getBoundingClientRect();
+                        const parentRect = mapContainer.getBoundingClientRect();
+                        const exactX = rect.left - parentRect.left + (rect.width / 2);
+                        const exactY = rect.top - parentRect.top + (rect.height / 2);
+
+                        activeTrains[t.id].style.transition = 'none';
+                        activeTrains[t.id].style.left = `${exactX}px`;
+                        activeTrains[t.id].style.top = `${exactY}px`;
+                    }
+                } else {
+                    // --- THE FIX: RESYNC ANIMATION TIME ---
+                    // 1. Get exact current position
+                    let currentLeft = parseFloat(activeTrains[t.id].style.left) || startX;
+                    let currentTop = parseFloat(activeTrains[t.id].style.top) || startY;
+                    
+                    // 2. Calculate distances
+                    let totalDist = Math.hypot(targetX - startX, targetY - startY);
+                    let remainDist = Math.hypot(targetX - currentLeft, targetY - currentTop);
+                    
+                    // 3. Find the fraction of the track remaining (e.g., 0.5 for halfway)
+                    let fraction = totalDist > 0 ? (remainDist / totalDist) : 1;
+                    if (fraction > 1) fraction = 1; // Safety cap
+                    
+                    // 4. Scale the CSS speed so the UI arrives exactly when the C++ server does!
+                    let adjustedSpeed = speed * fraction;
+
+                    activeTrains[t.id].style.transition = `left ${adjustedSpeed}s linear, top ${adjustedSpeed}s linear`;
+                    activeTrains[t.id].style.left = `${targetX}px`;
+                    activeTrains[t.id].style.top  = `${targetY}px`;
+                }
             }
         });
     }
 
+    // Clean up arrived/deleted trains
     for (const id in activeTrains) {
         if (!currentTrainIds.has(id)) {
             activeTrains[id].remove();
