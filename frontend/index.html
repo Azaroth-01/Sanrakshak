@@ -448,9 +448,20 @@
             pointer-events: none;
             box-shadow: 0 0 12px var(--train-local);
             white-space: nowrap;
+            transition: left 0.4s linear, top 0.4s linear;
+            pointer-events: auto; /* CHANGED: Allow clicking! */
+            box-shadow: 0 0 12px var(--train-local);
+            white-space: nowrap;
+            cursor: crosshair;
         }
         .train.Express { background: var(--train-express); box-shadow: 0 0 14px var(--train-express); }
         .train.Freight  { background: var(--train-freight); color: #fff; box-shadow: 0 0 14px var(--train-freight); }
+        .train.selected {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+            box-shadow: 0 0 20px #fff, 0 0 15px var(--text-accent);
+            z-index: 50; 
+        }
 
         /* ══════════════════════ RIGHT PANEL ══════════════════════ */
         #telemetry-panel {
@@ -820,6 +831,11 @@
 <!-- ══ RIGHT PANEL ══ -->
 <div id="telemetry-panel">
     <div class="panel-section-hdr">INTERLOCK TELEMETRY</div>
+
+    <div class="panel-section-hdr" style="font-size:10px; background: #0f1e33; color: #facc15;">LIVE TELEMETRY</div>
+    <div id="live-telemetry" style="padding: 10px; font-size: 11px; font-family: var(--font-mono); color: var(--text-dim); border-bottom: 1px solid var(--border-dim); min-height: 70px;">
+        NO TRAIN SELECTED.<br>Click an active train on the map to view live data.
+    </div>
 
     <div class="panel-section-hdr" style="font-size:10px;">PENDING DEPARTURES</div>
     <div id="schedule-board"></div>

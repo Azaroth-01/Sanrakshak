@@ -585,7 +585,7 @@ function updateState(data) {
     if (statLocked) statLocked.innerText = lockedCount;
 } */
 
-
+let selectedTrainId = null;
 let nodeCoords = {
     // Western Line Hubs
     "ANDHERI":      { x: 350, y: 500 },
@@ -742,6 +742,21 @@ function closeModals() {
 }
 
 mapContainer.addEventListener('click', (e) => {
+
+    // 1. Train Telemetry Click
+    if (e.target.classList.contains('train')) {
+        selectedTrainId = e.target.innerText;
+        document.querySelectorAll('.train').forEach(t => t.classList.remove('selected'));
+        e.target.classList.add('selected');
+        return;
+    }
+
+    // 2. Clear Train Selection if clicking empty space
+    if (e.target === mapContainer) {
+        selectedTrainId = null;
+        document.querySelectorAll('.train').forEach(t => t.classList.remove('selected'));
+        document.getElementById('live-telemetry').innerHTML = 'NO TRAIN SELECTED.<br>Click an active train on the map to view live data.';
+    }
     // NEW: Intercept clicks on tracks to trigger Wildlife Detection
     if (e.target.classList.contains('track-up') || e.target.classList.contains('track-dn')) {
         const trackId = e.target.dataset.id;
@@ -1190,6 +1205,28 @@ function updateState(data) {
                         el.getBoundingClientRect(); 
                     }
                 } else return;
+                // --- NEW: UPDATE TELEMETRY PANEL ---
+            if (t.id === selectedTrainId) {
+                activeTrains[t.id].classList.add('selected');
+                
+                // Determine Live Status
+                let status = "IN TRANSIT";
+                const reverseLoc = t.loc && t.loc.includes('-') ? t.loc.split('-').reverse().join('-') : '';
+                if ((data.sim_active === false) || isEStopActive) status = "⚠ SYSTEM HALT";
+                else if (animalSet.has(t.loc) || animalSet.has(reverseLoc)) status = "🐘 WILDLIFE HALT";
+
+                // Print the HUD
+                document.getElementById('live-telemetry').innerHTML = `
+                    <div style="color:#fff; font-size:13px; margin-bottom: 4px;">
+                        ${t.id} <span style="color:var(--text-accent)">[${t.type}]</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 40px 1fr; gap: 4px;">
+                        <span style="color:var(--text-dim)">LOC:</span> <span>${t.loc}</span>
+                        <span style="color:var(--text-dim)">SPD:</span> <span>${speed}s / segment</span>
+                        <span style="color:var(--text-dim)">STS:</span> <span style="color: ${status.includes('HALT') ? 'var(--text-danger)' : 'var(--text-ok)'}; font-weight: bold;">${status}</span>
+                    </div>
+                `;
+            }
             } else return;
 
             if (activeTrains[t.id]) {
@@ -1238,6 +1275,20 @@ function updateState(data) {
     // Clean up arrived/deleted trains
     for (const id in activeTrains) {
         if (!currentTrainIds.has(id)) {
+            
+            // --- THE FIX: UPDATE THE PANEL ON ARRIVAL ---
+            if (id === selectedTrainId) {
+                document.getElementById('live-telemetry').innerHTML = `
+                    <div style="color:#fff; font-size:13px; margin-bottom: 4px;">
+                        ${id} <span style="color:var(--text-dim)">[LOGGED OFF]</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 15px; color: var(--text-ok); font-family: var(--font-ui); font-size: 14px; font-weight: bold; letter-spacing: 1px;">
+                        ✔ ARRIVED AT DESTINATION
+                    </div>
+                `;
+                selectedTrainId = null; // Clear selection from memory
+            }
+
             activeTrains[id].remove();
             delete activeTrains[id];
         }
