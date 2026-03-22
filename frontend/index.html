@@ -703,6 +703,19 @@
             white-space: nowrap;
             pointer-events: none;
         }
+        .animal-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            animation: elephant-blink 1s infinite alternate;
+            pointer-events: none; /* Let clicks pass through */
+            z-index: 40; /* Sit above the trains! */
+            text-shadow: 0 0 10px #d946ef, 0 0 20px #c026d3; /* Neon Pink Glow */
+        }
+        @keyframes elephant-blink {
+            0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 1; text-shadow: 0 0 15px #d946ef, 0 0 35px #e879f9; transform: translate(-50%, -50%) scale(1.3); }
+        }
     </style>
 </head>
 <body>
@@ -794,6 +807,16 @@
     </div>
 </div>
 
+<div id="animal-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title" style="color: #e879f9; border-color: #a21caf;">🐘 Wildlife Detection</div>
+        <input type="text" id="anim-track-id" class="modal-input" readonly style="color:#5a8ab0; border-color: #a21caf;">
+        <p style="color: var(--text-dim); font-size: 11px;">Declare a wildlife crossing to establish a Temporary Speed Restriction (TSR) for all approaching trains.</p>
+        <button class="modal-btn" style="background: #c026d3;" onclick="submitAnimals()">TOGGLE RESTRICTION</button>
+        <button class="modal-btn cancel" onclick="closeModals()">CANCEL</button>
+    </div>
+</div>
+
 <!-- ══ RIGHT PANEL ══ -->
 <div id="telemetry-panel">
     <div class="panel-section-hdr">INTERLOCK TELEMETRY</div>
@@ -819,6 +842,6 @@
 <!-- ══ E-STOP OVERLAY ══ -->
 <div id="estop-overlay"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=999"></script>
 </body>
 </html>

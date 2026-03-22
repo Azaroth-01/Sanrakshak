@@ -1,8 +1,8 @@
 CMakeFiles/sanrakshan_server.dir/src/NetworkGraph.cpp.o: \
- /home/aaryamaan/Desktop/Sanrakshan/backend/src/NetworkGraph.cpp \
+ /home/aaryamaan/Documents/Sanrakshak/backend/src/NetworkGraph.cpp \
  /usr/include/stdc-predef.h \
- /home/aaryamaan/Desktop/Sanrakshan/backend/include/NetworkGraph.hpp \
- /home/aaryamaan/Desktop/Sanrakshan/backend/include/models.hpp \
+ /home/aaryamaan/Documents/Sanrakshak/backend/include/NetworkGraph.hpp \
+ /home/aaryamaan/Documents/Sanrakshak/backend/include/models.hpp \
  /usr/include/c++/13/string /usr/include/c++/13/bits/requires_hosted.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \

@@ -13,6 +13,7 @@ struct TrackSegment {
     int max_speed;
     std::mutex segment_lock;
     bool is_broken = false; 
+    bool has_animals = false;
     
     TrackSegment(std::string id, std::string src, std::string tgt, int len, int spd)
         : id(id), source_id(src), target_id(tgt), length_km(len), max_speed(spd) {}

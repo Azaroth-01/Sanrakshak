@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/aaryamaan/Desktop/Sanrakshan/backend/include
+CXX_INCLUDES = -I/home/aaryamaan/Documents/Sanrakshak/backend/include
 
 CXX_FLAGS = -std=gnu++17
 
