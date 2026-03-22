@@ -381,7 +381,7 @@ namespace WebServer {
                     if (!t->has_departed) continue; // Keep sleeping trains hidden from the map!
                     payload["trains"].push_back({
                         // --- NEW: Sending the dynamic speed down to UI ---
-                        {"id", t->id}, {"type", t->type}, {"loc", t->current_location}, {"speed", t->current_speed}
+                        {"id", t->id}, {"type", t->type}, {"loc", t->current_location}, {"speed", t->current_speed}, {"status", pair.second->status}
                     });
                 }
 

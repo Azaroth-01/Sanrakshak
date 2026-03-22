@@ -1268,6 +1268,48 @@ function updateState(data) {
                     activeTrains[t.id].style.left = `${targetX}px`;
                     activeTrains[t.id].style.top  = `${targetY}px`;
                 }
+
+                // ---------------------------------------------------------
+                // NEW: KAVACH / TCAS VISUALIZER & TELEMETRY
+                // ---------------------------------------------------------
+                
+                // 1. Toggle the Red Flashing TCAS CSS class
+                if (t.status === 'TCAS_ACTIVE') {
+                    activeTrains[t.id].classList.add('tcas-alert');
+                } else {
+                    activeTrains[t.id].classList.remove('tcas-alert');
+                }
+
+                // 2. Update the Right-Hand Panel if this train is clicked
+                if (t.id === selectedTrainId) {
+                    activeTrains[t.id].classList.add('selected');
+                    
+                    let statusMsg = "IN TRANSIT";
+                    let statusColor = "var(--text-ok)";
+
+                    if (isSystemPaused) {
+                        statusMsg = "⚠ SYSTEM HALT";
+                        statusColor = "var(--text-warn)";
+                    } else if (isBlockedByElephant) {
+                        statusMsg = "🐘 WILDLIFE HALT";
+                        statusColor = "#e879f9";
+                    } else if (t.status === 'TCAS_ACTIVE') {
+                        statusMsg = "🛑 AUTO-BRAKE: COLLISION AVOIDED";
+                        statusColor = "var(--text-danger)";
+                    }
+
+                    document.getElementById('live-telemetry').innerHTML = `
+                        <div style="color:#fff; font-size:13px; margin-bottom: 4px;">
+                            ${t.id} <span style="color:var(--text-accent)">[${t.type}]</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 40px 1fr; gap: 4px;">
+                            <span style="color:var(--text-dim)">LOC:</span> <span>${t.loc}</span>
+                            <span style="color:var(--text-dim)">SPD:</span> <span>${speed}s / segment</span>
+                            <span style="color:var(--text-dim)">STS:</span> <span style="color: ${statusColor}; font-weight: bold; animation: ${t.status === 'TCAS_ACTIVE' ? 'tcas-strobe 0.5s infinite alternate' : 'none'};">${statusMsg}</span>
+                        </div>
+                    `;
+                }
+                // ---------------------------------------------------------
             }
         });
     }
@@ -1276,7 +1318,7 @@ function updateState(data) {
     for (const id in activeTrains) {
         if (!currentTrainIds.has(id)) {
             
-            // --- THE FIX: UPDATE THE PANEL ON ARRIVAL ---
+            // UPDATE THE PANEL ON ARRIVAL
             if (id === selectedTrainId) {
                 document.getElementById('live-telemetry').innerHTML = `
                     <div style="color:#fff; font-size:13px; margin-bottom: 4px;">

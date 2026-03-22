@@ -240,8 +240,17 @@ namespace SimulationEngine {
             }
 
             if (target_track) {
-                // LOCK THE SPECIFIC DIRECTIONAL TRACK
-                std::lock_guard<std::mutex> track_lock(target_track->segment_lock);
+                // --- THE KAVACH/TCAS SENSOR ---
+                // We use unique_lock with defer_lock so we can "test" the track first
+                std::unique_lock<std::mutex> track_lock(target_track->segment_lock, std::defer_lock);
+                
+                // If try_lock() fails, another train is ALREADY on this track!
+                if (!track_lock.try_lock()) {
+                    train->status = "TCAS_ACTIVE"; // Trigger the UI Alert!
+                    track_lock.lock();             // Now safely wait for the track to clear
+                }
+                
+                train->status = "IN_TRANSIT";      // Track is clear, proceed!
                 train->current_location = target_track->id;
                 
                 // DYNAMIC RADAR LOOP
@@ -253,18 +262,23 @@ namespace SimulationEngine {
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
                     
-                    // Calculate normal speed
                     // 1. Calculate normal speed based on train type
                     int current_target_speed = 12000;
                     if (train->type == "Express") current_target_speed = 7000; 
                     else if (train->type == "Freight") current_target_speed = 18000; 
 
-                    // 2. Scan for Elephants!
-                    // --- THE TRUE MID-TRACK HALT ---
-                    while (target_track->has_animals) {
+                    // 2. Scan for Elephants! (WITH SAFE MEMORY LOCK)
+                    while (true) {
+                        bool is_blocked = false;
+                        {
+                            std::lock_guard<std::mutex> lock(NetworkGraph::graph_mutex);
+                            is_blocked = target_track->has_animals;
+                        }
+                        
+                        if (!is_blocked) break; // Track is clear!
+
                         if (train->is_aborted) return;
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                        // The thread is now literally frozen here until the elephant leaves!
                     }
                     
                     // Look Ahead Brakes (Slightly slow down if NEXT track has animals)
@@ -275,6 +289,13 @@ namespace SimulationEngine {
                             current_target_speed *= 2; 
                         }
                     }
+
+                    // 3. Move the Train Forward
+                    train->current_speed = current_target_speed / 1000; 
+                    if (elapsed >= current_target_speed) break; // Track completed!
+                    
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    elapsed += 50;
                 }
             }
             train->current_location = next_station;

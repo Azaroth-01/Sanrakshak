@@ -33,6 +33,7 @@ struct Train {
     int current_speed;
     std::string current_location; 
     std::vector<std::string> route; 
+    std::string status;
     
     int scheduled_time_mins; 
     bool has_departed;
